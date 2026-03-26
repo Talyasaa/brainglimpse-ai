@@ -3,22 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BrainGlimpse.ai — Your AI Shopping Feed</title>
+  <title>BrainGlimpse.ai — You Think It. We Find It.</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
       theme: {
         extend: {
-          colors: {
-            brand: '#7C3AED',
-            'brand-light': '#A78BFA',
-            surface: '#0F0F0F',
-            card: '#141414',
-            border: '#1F1F1F',
-            muted: '#6B7280',
-          },
           fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['"Bricolage Grotesque"', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
           },
         },
       },
@@ -26,98 +19,144 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
   <style>
-    * { -webkit-font-smoothing: antialiased; }
-    body { background-color: #0A0A0A; }
+    * { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #080502; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; color: #FAF9F7; overflow-x: hidden; }
 
-    body::before {
-      content: '';
-      position: fixed; inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none; z-index: 0; opacity: 0.4;
-    }
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #080502; }
+    ::-webkit-scrollbar-thumb { background: #2A1E14; border-radius: 99px; }
 
-    .glow-orb {
-      position: absolute; border-radius: 50%;
-      filter: blur(120px); pointer-events: none;
+    /* ── Eye animations ── */
+    @keyframes iris-breathe {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.9; }
     }
-
-    /* Shiny generate button */
-    .btn-generate {
-      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #5B21B6 100%);
-      position: relative; overflow: hidden; transition: all 0.3s ease;
+    @keyframes outer-glow-pulse {
+      0%, 100% { opacity: 0.35; }
+      50% { opacity: 0.75; }
     }
-    .btn-generate::before {
-      content: ''; position: absolute; top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      transition: left 0.5s ease;
+    @keyframes neural-pulse {
+      0%, 100% { opacity: 0.12; }
+      50% { opacity: 0.38; }
     }
-    .btn-generate:hover::before { left: 100%; }
-    .btn-generate:hover {
-      box-shadow: 0 0 32px rgba(124,58,237,0.6), 0 0 64px rgba(124,58,237,0.2);
-      transform: translateY(-1px);
-    }
-    .btn-generate:disabled {
-      opacity: 0.7; cursor: not-allowed; transform: none;
-    }
-
-    /* Product cards */
-    .product-card {
-      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
-    }
-    .product-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.3);
-      border-color: rgba(124,58,237,0.4) !important;
-    }
-
-    .score-badge {
-      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(167,139,250,0.15));
-      border: 1px solid rgba(124,58,237,0.35);
-    }
-
-    .btn-amazon {
-      background: linear-gradient(135deg, #1a1a1a, #252525);
-      border: 1px solid #2a2a2a;
-      transition: all 0.25s ease;
-      position: relative; overflow: hidden;
-    }
-    .btn-amazon::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(167,139,250,0.05));
-      opacity: 0; transition: opacity 0.25s ease;
-    }
-    .btn-amazon:hover::after { opacity: 1; }
-    .btn-amazon:hover {
-      border-color: rgba(124,58,237,0.5);
-      transform: translateY(-1px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    }
-
-    .search-input:focus {
-      outline: none;
-      box-shadow: 0 0 0 1px rgba(124,58,237,0.6), 0 0 24px rgba(124,58,237,0.15);
-    }
-
-    @keyframes pulse-dot {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.6; transform: scale(0.85); }
-    }
-    .logo-dot { animation: pulse-dot 2.5s ease-in-out infinite; }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
+    @keyframes float-up {
+      from { opacity: 0; transform: translateY(28px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .fade-up { animation: fadeUp 0.7s ease forwards; }
-    .delay-1 { animation-delay: 0.1s;  opacity: 0; }
-    .delay-2 { animation-delay: 0.25s; opacity: 0; }
-    .delay-3 { animation-delay: 0.4s;  opacity: 0; }
-    .delay-4 { animation-delay: 0.55s; opacity: 0; }
+    @keyframes brain-spin {
+      0%, 100% { transform: rotate(-4deg) scale(1); }
+      50% { transform: rotate(4deg) scale(1.08); }
+    }
 
-    /* Masonry grid */
+    .iris-anim  { animation: iris-breathe 4s ease-in-out infinite; transform-origin: 260px 120px; }
+    .glow-anim  { animation: outer-glow-pulse 4s ease-in-out infinite; }
+    .neural-anim { animation: neural-pulse 3s ease-in-out infinite; }
+    .neural-anim.d1 { animation-delay: 0.4s; }
+    .neural-anim.d2 { animation-delay: 0.9s; }
+    .brain-anim { animation: brain-spin 5s ease-in-out infinite; transform-origin: 260px 120px; transform-box: fill-box; }
+
+    .fade-up { animation: float-up 0.8s ease forwards; opacity: 0; }
+    .fu1 { animation-delay: 0.1s; }
+    .fu2 { animation-delay: 0.25s; }
+    .fu3 { animation-delay: 0.4s; }
+    .fu4 { animation-delay: 0.55s; }
+    .fu5 { animation-delay: 0.7s; }
+
+    /* ── Hero radial warm glow ── */
+    .hero-bg-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 700px; height: 700px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, rgba(251,191,36,0.06) 40%, transparent 70%);
+      pointer-events: none;
+    }
+
+    /* ── Search ── */
+    .search-shell {
+      background: rgba(249,115,22,0.04);
+      border: 1.5px solid rgba(249,115,22,0.18);
+      border-radius: 20px;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .search-shell:focus-within {
+      border-color: rgba(249,115,22,0.5);
+      box-shadow: 0 0 60px rgba(249,115,22,0.1);
+    }
+    .search-shell input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 18px;
+      color: #FAF9F7;
+      padding: 14px 18px;
+      min-width: 0;
+    }
+    .search-shell input::placeholder { color: #4A3D30; }
+
+    /* ── CTA button ── */
+    .btn-cta {
+      background: linear-gradient(135deg, #F97316 0%, #EA580C 55%, #C2410C 100%);
+      border: none;
+      border-radius: 14px;
+      padding: 14px 32px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-cta::before {
+      content: '';
+      position: absolute; top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      transition: left 0.5s;
+    }
+    .btn-cta:hover::before { left: 100%; }
+    .btn-cta:hover { box-shadow: 0 0 32px rgba(249,115,22,0.5); transform: translateY(-1px); }
+    .btn-cta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* ── Chips ── */
+    .chip {
+      background: rgba(249,115,22,0.06);
+      border: 1px solid rgba(249,115,22,0.18);
+      color: #7A6655;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 99px;
+      padding: 6px 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover { background: rgba(249,115,22,0.14); border-color: rgba(249,115,22,0.4); color: #FBBF24; }
+
+    /* ── Divider ── */
+    .warm-line {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(249,115,22,0.2), rgba(251,191,36,0.12), transparent);
+    }
+
+    /* ── Product grid ── */
     .products-grid { columns: 1; gap: 1.25rem; }
     @media (min-width: 640px)  { .products-grid { columns: 2; } }
     @media (min-width: 1024px) { .products-grid { columns: 3; } }
@@ -125,350 +164,488 @@
     @media (min-width: 1800px) { .products-grid { columns: 5; } }
     .products-grid > * { break-inside: avoid; margin-bottom: 1.25rem; }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0A0A0A; }
-    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 999px; }
-
-    .tag-pill {
-      font-size: 0.65rem; letter-spacing: 0.05em;
-      font-weight: 600; text-transform: uppercase;
+    /* ── Card ── */
+    .p-card {
+      background: #131008;
+      border: 1px solid #221910;
+      border-radius: 18px;
+      overflow: hidden;
+      transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
     }
-
-    /* Spinner */
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spinner {
-      width: 18px; height: 18px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-top-color: #fff;
-      animation: spin 0.7s linear infinite;
-      display: inline-block; vertical-align: middle;
+    .p-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(249,115,22,0.32);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(249,115,22,0.15);
     }
-
-    /* Skeleton shimmer */
-    @keyframes shimmer {
-      0%   { background-position: -600px 0; }
-      100% { background-position: 600px 0; }
-    }
-    .skeleton {
-      background: linear-gradient(90deg, #1a1a1a 25%, #222222 50%, #1a1a1a 75%);
-      background-size: 600px 100%;
-      animation: shimmer 1.4s infinite linear;
-      border-radius: 8px;
-    }
-
-    /* Product image */
-    .product-img {
+    .p-card img {
       width: 100%; height: 200px;
       object-fit: contain; object-position: center;
-      background: #1a1a1a;
-      padding: 12px;
-      transition: transform 0.5s ease;
+      background: #0E0A06; padding: 14px;
+      transition: transform 0.5s;
     }
-    .product-card:hover .product-img { transform: scale(1.04); }
-
-    /* Title clamp */
-    .product-title {
+    .p-card:hover img { transform: scale(1.04); }
+    .p-title {
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+    .score-badge {
+      background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(251,191,36,0.08));
+      border: 1px solid rgba(249,115,22,0.28);
+      border-radius: 10px;
+      padding: 7px 12px;
+      text-align: center;
+    }
+    .btn-amz {
+      display: block;
+      width: 100%; text-align: center;
+      padding: 10px;
+      border-radius: 12px;
+      background: #1A1208;
+      border: 1px solid #2A1A0C;
+      font-size: 13px;
+      font-weight: 600;
+      color: #FAF9F7;
+      text-decoration: none;
+      position: relative; overflow: hidden;
+      transition: all 0.25s;
+    }
+    .btn-amz::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(251,191,36,0.05));
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .btn-amz:hover::after { opacity: 1; }
+    .btn-amz:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-1px); }
+
+    .tag-pill {
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.06em; text-transform: uppercase;
+      border-radius: 99px; padding: 3px 10px;
+    }
+
+    /* ── Skeleton ── */
+    @keyframes shimmer {
+      from { background-position: -600px 0; }
+      to   { background-position: 600px 0; }
+    }
+    .skel {
+      background: linear-gradient(90deg, #1a1208 25%, #231809 50%, #1a1208 75%);
+      background-size: 600px 100%;
+      animation: shimmer 1.4s infinite linear;
+      border-radius: 8px;
+    }
+
+    /* ── Spinner ── */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 17px; height: 17px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: white;
+      animation: spin 0.65s linear infinite;
+      display: inline-block;
+    }
   </style>
 </head>
 
-<body class="text-white font-sans relative overflow-x-hidden">
-
-  <!-- Glow orbs -->
-  <div class="glow-orb w-[600px] h-[600px] bg-purple-900/20 top-[-200px] left-[-200px]"></div>
-  <div class="glow-orb w-[400px] h-[400px] bg-violet-800/15 top-[40%] right-[-100px]"></div>
-  <div class="glow-orb w-[300px] h-[300px] bg-purple-700/10 bottom-[10%] left-[20%]"></div>
+<body>
 
   <!-- ========== HEADER ========== -->
-  <header class="relative z-10 border-b border-white/[0.06] backdrop-blur-sm bg-black/20 sticky top-0">
-    <div class="w-full px-8 sm:px-16 h-14 flex items-center justify-between">
-      <a href="#" class="flex items-center gap-2 group">
-        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/40">
-          <span class="text-white font-black text-xs tracking-tight">B</span>
+  <header style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(42,30,20,0.5);backdrop-filter:blur(12px);background:rgba(8,5,2,0.85);">
+    <div style="padding: 0 4rem; height: 56px; display:flex; align-items:center; justify-content:space-between; max-width:100%;">
+
+      <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#FBBF24,#EA580C);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(234,88,12,0.35);">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:13px;color:white;">B</span>
         </div>
-        <span class="text-white font-semibold text-[15px] tracking-tight">
-          BrainGlimpse<span class="text-violet-400">.ai</span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:15px;color:#FAF9F7;">
+          BrainGlimpse<span style="color:#F97316;">.ai</span>
         </span>
       </a>
-      <nav class="hidden sm:flex items-center gap-6">
-        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Features</a>
-        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Pricing</a>
-        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Blog</a>
+
+      <nav style="display:flex;align-items:center;gap:28px;">
+        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Features</a>
+        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Pricing</a>
+        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Blog</a>
+        <button class="btn-cta" style="padding:8px 20px;font-size:13px;">Get Early Access</button>
       </nav>
-      <button class="btn-generate px-4 py-1.5 rounded-lg text-[13px] font-semibold text-white">
-        Get Early Access
-      </button>
+
     </div>
   </header>
 
   <!-- ========== HERO ========== -->
-  <section class="relative z-10 pt-24 pb-20 px-8 sm:px-16 text-center">
-    <div class="w-full max-w-4xl mx-auto">
+  <section style="position:relative;min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 4rem 80px;text-align:center;overflow:hidden;">
 
-      <div class="fade-up delay-1 inline-flex items-center gap-2 bg-white/[0.05] border border-white/[0.1] rounded-full px-3.5 py-1.5 mb-8">
-        <span class="logo-dot w-1.5 h-1.5 rounded-full bg-violet-400 inline-block"></span>
-        <span class="text-[11px] font-medium text-gray-300 tracking-wide uppercase">AI-Powered Shopping — Now in Beta</span>
-      </div>
+    <!-- Warm glow bg -->
+    <div class="hero-bg-glow"></div>
 
-      <h1 class="fade-up delay-2 text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight text-white mb-6">
-        You think it.<br />
-        <span class="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
-          BrainGlimpse finds it.
-        </span>
-      </h1>
+    <!-- Neural network SVG background -->
+    <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+      <g stroke="#F97316" stroke-width="0.6" class="neural-anim">
+        <line x1="700" y1="450" x2="410" y2="190"/>
+        <line x1="700" y1="450" x2="990" y2="190"/>
+        <line x1="700" y1="450" x2="180" y2="490"/>
+        <line x1="700" y1="450" x2="1220" y2="460"/>
+        <line x1="700" y1="450" x2="560" y2="720"/>
+        <line x1="700" y1="450" x2="880" y2="730"/>
+        <line x1="700" y1="450" x2="330" y2="760"/>
+        <line x1="700" y1="450" x2="1090" y2="740"/>
+        <line x1="700" y1="450" x2="80"  y2="260"/>
+        <line x1="700" y1="450" x2="1320" y2="280"/>
+        <line x1="700" y1="450" x2="700" y2="60"/>
+        <line x1="700" y1="450" x2="700" y2="840"/>
+      </g>
+      <g stroke="#FBBF24" stroke-width="0.4" class="neural-anim d1">
+        <line x1="410" y1="190" x2="180" y2="490"/>
+        <line x1="990" y1="190" x2="1220" y2="460"/>
+        <line x1="560" y1="720" x2="330" y2="760"/>
+        <line x1="880" y1="730" x2="1090" y2="740"/>
+        <line x1="180" y1="490" x2="330" y2="760"/>
+        <line x1="1220" y1="460" x2="1090" y2="740"/>
+        <line x1="80"  y1="260" x2="180" y2="490"/>
+        <line x1="1320" y1="280" x2="1220" y2="460"/>
+        <line x1="700" y1="60"  x2="410" y2="190"/>
+        <line x1="700" y1="60"  x2="990" y2="190"/>
+      </g>
+      <g class="neural-anim d2">
+        <circle cx="700" cy="450" r="3"   fill="#F97316" opacity="0.7"/>
+        <circle cx="410" cy="190" r="2"   fill="#FBBF24" opacity="0.5"/>
+        <circle cx="990" cy="190" r="2"   fill="#FBBF24" opacity="0.5"/>
+        <circle cx="180" cy="490" r="2"   fill="#F97316" opacity="0.35"/>
+        <circle cx="1220" cy="460" r="2"  fill="#F97316" opacity="0.35"/>
+        <circle cx="560" cy="720" r="1.5" fill="#FBBF24" opacity="0.3"/>
+        <circle cx="880" cy="730" r="1.5" fill="#FBBF24" opacity="0.3"/>
+        <circle cx="330" cy="760" r="1.5" fill="#F97316" opacity="0.25"/>
+        <circle cx="1090" cy="740" r="1.5" fill="#F97316" opacity="0.25"/>
+        <circle cx="80"  cy="260" r="1.5" fill="#FBBF24" opacity="0.2"/>
+        <circle cx="1320" cy="280" r="1.5" fill="#FBBF24" opacity="0.2"/>
+        <circle cx="700" cy="60"  r="2"   fill="#F97316" opacity="0.3"/>
+        <circle cx="700" cy="840" r="2"   fill="#F97316" opacity="0.3"/>
+      </g>
+    </svg>
 
-      <p class="fade-up delay-3 text-gray-400 text-lg sm:text-xl leading-relaxed max-w-xl mx-auto mb-12">
-        Your personalized AI shopping feed for Amazon. Tell us your vibe,<br class="hidden sm:block" />
-        we curate the perfect products.
-      </p>
+    <!-- Eye SVG -->
+    <div class="fade-up fu1" style="margin-bottom:36px;">
+      <svg width="460" height="220" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" style="max-width:88vw;filter:drop-shadow(0 0 40px rgba(249,115,22,0.2));">
+        <defs>
+          <radialGradient id="iris-g" cx="42%" cy="38%" r="62%">
+            <stop offset="0%"   stop-color="#FDE68A"/>
+            <stop offset="20%"  stop-color="#FBBF24"/>
+            <stop offset="50%"  stop-color="#F97316"/>
+            <stop offset="78%"  stop-color="#DC2626"/>
+            <stop offset="100%" stop-color="#7C2D12"/>
+          </radialGradient>
+          <radialGradient id="halo-g" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stop-color="#F97316" stop-opacity="0.55"/>
+            <stop offset="55%"  stop-color="#F97316" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#F97316" stop-opacity="0"/>
+          </radialGradient>
+          <filter id="glow-f" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <clipPath id="eye-c">
+            <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z"/>
+          </clipPath>
+        </defs>
 
-      <!-- Search bar -->
-      <div class="fade-up delay-4 max-w-2xl mx-auto">
-        <div class="flex flex-col sm:flex-row gap-3 bg-white/[0.04] border border-white/[0.1] rounded-2xl p-2 backdrop-blur-md shadow-2xl shadow-black/40">
-          <input
-            id="search-input"
-            type="text"
-            class="search-input flex-1 bg-transparent border-0 text-white placeholder-gray-500 text-[15px] px-4 py-3 rounded-xl transition-all"
-            placeholder="e.g., Aesthetic desk setup under $200..."
-            autocomplete="off"
-          />
-          <button
-            id="generate-btn"
-            class="btn-generate px-6 py-3 rounded-xl text-[14px] font-bold text-white whitespace-nowrap flex items-center justify-center gap-2"
-          >
-            <span id="btn-text">Read My Mind ✦</span>
-            <span id="btn-spinner" class="spinner hidden"></span>
-          </button>
-        </div>
-        <p class="mt-3 text-[12px] text-gray-600">
-          Try: "cozy gaming setup" · "minimalist home office" · "Y2K fashion accessories"
-        </p>
-      </div>
+        <!-- Outer halo glow -->
+        <ellipse cx="260" cy="120" rx="235" ry="118" fill="url(#halo-g)" class="glow-anim"/>
 
+        <!-- Eye bed -->
+        <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z" fill="#100A05"/>
+
+        <!-- Iris -->
+        <circle cx="260" cy="120" r="82" fill="url(#iris-g)" clip-path="url(#eye-c)" class="iris-anim" filter="url(#glow-f)"/>
+
+        <!-- Iris texture lines -->
+        <g clip-path="url(#eye-c)" stroke="#FDE68A" stroke-width="0.7" opacity="0.18">
+          <line x1="260" y1="120" x2="260" y2="38"/>
+          <line x1="260" y1="120" x2="331" y2="50"/>
+          <line x1="260" y1="120" x2="378" y2="85"/>
+          <line x1="260" y1="120" x2="342" y2="198"/>
+          <line x1="260" y1="120" x2="260" y2="202"/>
+          <line x1="260" y1="120" x2="178" y2="198"/>
+          <line x1="260" y1="120" x2="142" y2="85"/>
+          <line x1="260" y1="120" x2="189" y2="50"/>
+          <line x1="260" y1="120" x2="360" y2="65"/>
+          <line x1="260" y1="120" x2="395" y2="120"/>
+          <line x1="260" y1="120" x2="160" y2="65"/>
+          <line x1="260" y1="120" x2="125" y2="120"/>
+        </g>
+
+        <!-- Pupil -->
+        <circle cx="260" cy="120" r="37" fill="#060300" clip-path="url(#eye-c)"/>
+
+        <!-- Brain in pupil -->
+        <text x="260" y="132" text-anchor="middle" font-size="28"
+              clip-path="url(#eye-c)" class="brain-anim"
+              style="filter:drop-shadow(0 0 8px rgba(251,191,36,0.7))">🧠</text>
+
+        <!-- Specular highlights -->
+        <ellipse cx="228" cy="100" rx="17" ry="10" fill="white" opacity="0.58" clip-path="url(#eye-c)"/>
+        <ellipse cx="244" cy="109" rx="6"  ry="4"  fill="white" opacity="0.28" clip-path="url(#eye-c)"/>
+
+        <!-- Eye outline -->
+        <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z"
+              fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.9" filter="url(#soft)"/>
+
+        <!-- Upper lashes -->
+        <g stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round" opacity="0.6" filter="url(#soft)">
+          <line x1="152" y1="63" x2="140" y2="42"/>
+          <line x1="186" y1="42" x2="180" y2="22"/>
+          <line x1="222" y1="27" x2="219" y2="7"/>
+          <line x1="260" y1="20" x2="260" y2="0"/>
+          <line x1="298" y1="27" x2="301" y2="7"/>
+          <line x1="334" y1="42" x2="340" y2="22"/>
+          <line x1="368" y1="63" x2="380" y2="42"/>
+        </g>
+
+        <!-- Lower lashes -->
+        <g stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.3">
+          <line x1="186" y1="198" x2="180" y2="216"/>
+          <line x1="222" y1="211" x2="219" y2="229"/>
+          <line x1="260" y1="218" x2="260" y2="236"/>
+          <line x1="298" y1="211" x2="301" y2="229"/>
+          <line x1="334" y1="198" x2="340" y2="215"/>
+        </g>
+      </svg>
     </div>
-    <div class="mt-20 w-full border-t border-white/[0.05]"></div>
+
+    <!-- "You think it." -->
+    <p class="fade-up fu2" style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:500;color:#7A6655;letter-spacing:0.01em;margin-bottom:10px;">
+      You think it.
+    </p>
+
+    <!-- Main headline -->
+    <h1 class="fade-up fu3" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(52px,8vw,100px);line-height:0.95;letter-spacing:-0.02em;margin-bottom:24px;">
+      BrainGlimpse<br/>
+      <span style="color:#F97316;">finds it.</span>
+    </h1>
+
+    <!-- Subheadline -->
+    <p class="fade-up fu4" style="font-size:17px;color:#7A6655;line-height:1.65;max-width:480px;margin:0 auto 48px;">
+      Your personalized AI shopping feed for Amazon.<br/>
+      Describe your vibe — we surface the perfect products.
+    </p>
+
+    <!-- Search box -->
+    <div class="fade-up fu5" style="width:100%;max-width:860px;margin:0 auto;">
+      <div class="search-shell">
+        <input
+          id="search-input"
+          type="text"
+          placeholder="e.g., Aesthetic desk setup under $200..."
+          autocomplete="off"
+        />
+        <button id="generate-btn" class="btn-cta">
+          <span id="btn-text">Read My Mind ✦</span>
+          <span id="btn-spinner" class="spinner" style="display:none;"></span>
+        </button>
+      </div>
+
+      <!-- Suggestion chips -->
+      <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px;">
+        <button class="chip" onclick="fillSearch('cozy gaming setup')">cozy gaming setup</button>
+        <button class="chip" onclick="fillSearch('minimalist home office')">minimalist home office</button>
+        <button class="chip" onclick="fillSearch('Y2K fashion accessories')">Y2K accessories</button>
+        <button class="chip" onclick="fillSearch('aesthetic bedroom decor')">aesthetic bedroom</button>
+        <button class="chip" onclick="fillSearch('mechanical keyboard under $100')">mechanical keyboard</button>
+        <button class="chip" onclick="fillSearch('self care gift set')">self care</button>
+      </div>
+    </div>
+
+    <!-- Bottom divider -->
+    <div class="warm-line" style="position:absolute;bottom:0;left:0;right:0;"></div>
   </section>
 
-  <!-- ========== CURATED FEED ========== -->
-  <section class="relative z-10 px-8 sm:px-16 pb-28 w-full">
+  <!-- ========== FEED SECTION ========== -->
+  <section style="padding:72px 4rem 100px;width:100%;">
 
-    <div class="flex items-center justify-between mb-8">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;">
       <div>
-        <h2 class="text-[13px] font-semibold text-violet-400 uppercase tracking-widest mb-1">Curated for You</h2>
-        <p id="feed-title" class="text-white font-bold text-xl">Today's AI Feed</p>
+        <p style="font-size:11px;font-weight:700;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Curated for You</p>
+        <h2 id="feed-title" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;color:#FAF9F7;margin:0;">Today's AI Feed</h2>
       </div>
-      <div class="flex items-center gap-2 text-[12px] text-gray-500">
-        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4A3D30;">
+        <span style="width:7px;height:7px;border-radius:50%;background:#F97316;display:inline-block;animation:outer-glow-pulse 2s infinite;"></span>
         Live · Powered by Amazon
       </div>
     </div>
 
     <!-- Error banner -->
-    <div id="error-banner" class="hidden mb-6 flex items-start gap-3 bg-red-500/10 border border-red-500/20 rounded-xl px-5 py-4">
-      <span class="text-red-400 text-lg leading-none mt-0.5">⚠</span>
-      <p id="error-msg" class="text-red-300 text-[13px] leading-relaxed"></p>
+    <div id="error-banner" style="display:none;align-items:flex-start;gap:12px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.18);border-radius:14px;padding:16px 20px;margin-bottom:24px;">
+      <span style="color:#F87171;font-size:18px;line-height:1;margin-top:2px;">⚠</span>
+      <p id="error-msg" style="color:#FCA5A5;font-size:13px;line-height:1.6;margin:0;"></p>
     </div>
 
-    <!-- Mock mode notice -->
-    <div id="mock-banner" class="hidden mb-6 flex items-center gap-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl px-5 py-3">
-      <span class="text-yellow-400 text-sm">🧪</span>
-      <p class="text-yellow-300 text-[12px]">Mock mode is active — showing demo products. Set <code class="bg-white/10 px-1.5 py-0.5 rounded text-yellow-200">USE_MOCK_DATA=false</code> to use the live API.</p>
+    <!-- Mock banner -->
+    <div id="mock-banner" style="display:none;align-items:center;gap:12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.18);border-radius:14px;padding:12px 20px;margin-bottom:24px;">
+      <span style="font-size:14px;">🧪</span>
+      <p style="color:#FDE68A;font-size:12px;margin:0;">Mock mode active — showing demo products. Set <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#FCD34D;">USE_MOCK_DATA=false</code> to use the live API.</p>
     </div>
 
-    <!-- Products grid (populated by JS) -->
+    <!-- Products grid -->
     <div id="products-grid" class="products-grid"></div>
 
   </section>
 
   <!-- ========== FOOTER ========== -->
-  <footer class="relative z-10 border-t border-white/[0.06] py-8 px-5 sm:px-8">
-    <div class="w-full px-8 sm:px-16 flex flex-col sm:flex-row items-center justify-between gap-4">
-      <div class="flex items-center gap-2">
-        <div class="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
-          <span class="text-white font-black text-[9px]">B</span>
+  <footer style="border-top:1px solid rgba(42,30,20,0.5);padding:28px 4rem;">
+    <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
+
+      <div style="display:flex;align-items:center;gap:9px;">
+        <div style="width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#FBBF24,#EA580C);display:flex;align-items:center;justify-content:center;">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:10px;color:white;">B</span>
         </div>
-        <span class="text-gray-500 text-[13px] font-medium">BrainGlimpse<span class="text-violet-500">.ai</span></span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;color:#4A3D30;">
+          BrainGlimpse<span style="color:#C2410C;">.ai</span>
+        </span>
       </div>
-      <p class="text-gray-600 text-[12px]">© 2026 BrainGlimpse.ai — All rights reserved.</p>
-      <div class="flex items-center gap-5">
-        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Privacy</a>
-        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Terms</a>
-        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Contact</a>
+
+      <p style="font-size:12px;color:#3A2D20;margin:0;">© 2026 BrainGlimpse.ai — All rights reserved.</p>
+
+      <div style="display:flex;gap:20px;">
+        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Privacy</a>
+        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Terms</a>
+        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Contact</a>
       </div>
+
     </div>
   </footer>
 
-  <!-- ========== FRONTEND LOGIC ========== -->
+  <!-- ========== JS ========== -->
   <script>
     const AFFILIATE_TAG = 'brainglimpse-20';
 
-    const TAG_THEMES = [
-      { bg: 'bg-violet-500/20', border: 'border-violet-500/30', text: 'text-violet-300', label: 'Trending' },
-      { bg: 'bg-green-500/20',  border: 'border-green-500/30',  text: 'text-green-300',  label: 'Best Value' },
-      { bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', text: 'text-yellow-300', label: 'Top Rated' },
-      { bg: 'bg-teal-500/20',   border: 'border-teal-500/30',   text: 'text-teal-300',   label: 'Aesthetic' },
-      { bg: 'bg-blue-500/20',   border: 'border-blue-500/30',   text: 'text-blue-300',   label: "Editor's Pick" },
-      { bg: 'bg-orange-500/20', border: 'border-orange-500/30', text: 'text-orange-300', label: 'New Drop' },
+    const TAGS = [
+      { bg:'rgba(249,115,22,0.15)', border:'rgba(249,115,22,0.3)', color:'#FDBA74', label:'Trending' },
+      { bg:'rgba(251,191,36,0.15)', border:'rgba(251,191,36,0.3)', color:'#FDE68A', label:'Best Value' },
+      { bg:'rgba(220,38,38,0.15)',  border:'rgba(220,38,38,0.3)',  color:'#FCA5A5', label:'Hot Pick' },
+      { bg:'rgba(234,88,12,0.15)',  border:'rgba(234,88,12,0.3)',  color:'#FED7AA', label:'Top Rated' },
+      { bg:'rgba(217,119,6,0.15)',  border:'rgba(217,119,6,0.3)',  color:'#FCD34D', label:"Editor's Pick" },
+      { bg:'rgba(194,65,12,0.15)',  border:'rgba(194,65,12,0.3)',  color:'#FDBA74', label:'New Drop' },
     ];
 
-    // Brain Score: maps 0–5 star rating → 0–10, biased toward 7–10 range
-    function brainScore(starRating) {
-      const stars = parseFloat(starRating) || 4.0;
-      return Math.min(10, (stars / 5) * 3 + 7).toFixed(1);
+    function brainScore(r) {
+      return Math.min(10, (parseFloat(r) || 4.0) / 5 * 3 + 7).toFixed(1);
     }
-
-    function buildAmazonUrl(asin) {
+    function amazonUrl(asin) {
       return `https://www.amazon.com/dp/${asin}?tag=${AFFILIATE_TAG}`;
     }
+    function fillSearch(q) {
+      document.getElementById('search-input').value = q;
+      fetchProducts(q);
+    }
 
-    function renderSkeletons() {
-      const grid = document.getElementById('products-grid');
-      grid.innerHTML = Array.from({ length: 6 }).map(() => `
-        <div class="bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
-          <div class="skeleton w-full h-48"></div>
-          <div class="p-5 space-y-3">
-            <div class="skeleton h-3 w-1/3"></div>
-            <div class="skeleton h-4 w-full"></div>
-            <div class="skeleton h-4 w-3/4"></div>
-            <div class="flex justify-between mt-4">
-              <div class="skeleton h-6 w-16"></div>
-              <div class="skeleton h-10 w-20 rounded-lg"></div>
+    function showSkeletons() {
+      document.getElementById('products-grid').innerHTML = Array.from({length:6}).map(() => `
+        <div style="background:#131008;border:1px solid #221910;border-radius:18px;overflow:hidden;">
+          <div class="skel" style="height:200px;border-radius:0;"></div>
+          <div style="padding:20px;">
+            <div class="skel" style="height:11px;width:35%;margin-bottom:12px;"></div>
+            <div class="skel" style="height:14px;width:100%;margin-bottom:8px;"></div>
+            <div class="skel" style="height:14px;width:72%;margin-bottom:20px;"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+              <div class="skel" style="height:22px;width:60px;"></div>
+              <div class="skel" style="height:46px;width:70px;border-radius:10px;"></div>
             </div>
-            <div class="skeleton h-9 w-full rounded-xl mt-2"></div>
+            <div class="skel" style="height:38px;width:100%;border-radius:12px;"></div>
           </div>
-        </div>
-      `).join('');
+        </div>`).join('');
     }
 
     function renderProducts(products, query) {
       const grid = document.getElementById('products-grid');
-
-      if (!products || products.length === 0) {
-        grid.innerHTML = `
-          <div class="col-span-3 text-center py-20">
-            <p class="text-4xl mb-4">🔍</p>
-            <p class="text-gray-400 text-[15px]">No products found for "<span class="text-white">${query}</span>".<br/>Try a different search.</p>
-          </div>`;
+      if (!products?.length) {
+        grid.innerHTML = `<div style="text-align:center;padding:80px 0;grid-column:1/-1;">
+          <p style="font-size:40px;margin-bottom:12px;">🔍</p>
+          <p style="color:#7A6655;font-size:15px;">No results for "<span style="color:#FAF9F7;">${query}</span>".<br/>Try a different search.</p>
+        </div>`;
         return;
       }
-
       grid.innerHTML = products.map((p, i) => {
-        const tag    = TAG_THEMES[i % TAG_THEMES.length];
-        const score  = brainScore(p.product_star_rating);
-        const price  = p.product_price || 'See on Amazon';
-        const title  = p.product_title || 'Amazon Product';
-        const photo  = p.product_photo || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
-        const cat    = p.product_category || 'Amazon';
-        const url    = p.asin ? buildAmazonUrl(p.asin) : '#';
-
+        const t     = TAGS[i % TAGS.length];
+        const score = brainScore(p.product_star_rating);
+        const price = p.product_price || 'See Amazon';
+        const photo = p.product_photo || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+        const url   = p.asin ? amazonUrl(p.asin) : '#';
+        const cat   = p.product_category || 'Amazon';
         return `
-          <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
-            <div class="relative overflow-hidden bg-[#1a1a1a]">
-              <img
-                src="${photo}"
-                alt="${title}"
-                class="product-img"
-                onerror="this.src='https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80'"
-              />
-              <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none"></div>
-              <div class="absolute top-3 left-3">
-                <span class="tag-pill ${tag.bg} border ${tag.border} ${tag.text} rounded-full px-2.5 py-1">${tag.label}</span>
+        <div class="p-card">
+          <div style="position:relative;overflow:hidden;background:#0E0A06;">
+            <img src="${p.product_photo || photo}"
+                 alt="${p.product_title}"
+                 onerror="this.src='${photo}'" />
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(19,16,8,0.5),transparent);pointer-events:none;"></div>
+            <span class="tag-pill" style="position:absolute;top:12px;left:12px;background:${t.bg};border:1px solid ${t.border};color:${t.color};">${t.label}</span>
+          </div>
+          <div style="padding:20px;">
+            <p style="font-size:10.5px;color:#4A3D30;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 6px;">${cat}</p>
+            <h3 class="p-title" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#FAF9F7;line-height:1.4;margin:0 0 16px;">${p.product_title}</h3>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;color:#FAF9F7;">${price}</span>
+              <div class="score-badge">
+                <p style="font-size:9px;color:#FDBA74;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin:0;">Brain Score</p>
+                <p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:18px;color:#FDBA74;line-height:1.1;margin:0;">${score}<span style="font-size:10px;font-weight:500;color:#EA580C;">/10</span></p>
               </div>
             </div>
-            <div class="p-5">
-              <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">${cat}</p>
-              <h3 class="product-title text-white font-semibold text-[14px] leading-snug mb-4">${title}</h3>
-              <div class="flex items-center justify-between mb-4">
-                <span class="text-white font-bold text-xl">${price}</span>
-                <div class="score-badge rounded-lg px-3 py-1.5 text-center">
-                  <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
-                  <p class="text-violet-300 font-black text-base leading-none">${score}<span class="text-[10px] font-medium text-violet-400">/10</span></p>
-                </div>
-              </div>
-              <a
-                href="${url}"
-                target="_blank"
-                rel="noopener noreferrer sponsored"
-                class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10"
-              >
-                View on Amazon →
-              </a>
-            </div>
-          </div>`;
+            <a href="${url}" target="_blank" rel="noopener noreferrer sponsored" class="btn-amz">View on Amazon →</a>
+          </div>
+        </div>`;
       }).join('');
     }
 
-    function setLoading(loading) {
-      const btn     = document.getElementById('generate-btn');
-      const text    = document.getElementById('btn-text');
-      const spinner = document.getElementById('btn-spinner');
-      btn.disabled  = loading;
-      text.textContent = loading ? 'Finding…' : 'Read My Mind ✦';
-      spinner.classList.toggle('hidden', !loading);
+    function setLoading(on) {
+      const btn = document.getElementById('generate-btn');
+      const txt = document.getElementById('btn-text');
+      const sp  = document.getElementById('btn-spinner');
+      btn.disabled = on;
+      txt.textContent = on ? 'Finding…' : 'Read My Mind ✦';
+      sp.style.display = on ? 'inline-block' : 'none';
     }
 
     function showError(msg) {
-      const banner = document.getElementById('error-banner');
+      const b = document.getElementById('error-banner');
       document.getElementById('error-msg').textContent = msg;
-      banner.classList.remove('hidden');
+      b.style.display = 'flex';
     }
-
-    function hideError() {
-      document.getElementById('error-banner').classList.add('hidden');
-    }
+    function hideError() { document.getElementById('error-banner').style.display = 'none'; }
 
     async function fetchProducts(query) {
       hideError();
-      document.getElementById('mock-banner').classList.add('hidden');
+      document.getElementById('mock-banner').style.display = 'none';
       setLoading(true);
-      renderSkeletons();
-
-      document.getElementById('feed-title').textContent =
-        `Results for "${query}"`;
-
-      // Scroll to feed
+      showSkeletons();
+      document.getElementById('feed-title').textContent = `Results for "${query}"`;
       document.getElementById('products-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       try {
         const res  = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
         const data = await res.json();
-
-        if (!res.ok) {
-          showError(data.error || 'Something went wrong. Please try again.');
-          document.getElementById('products-grid').innerHTML = '';
-          return;
-        }
-
-        if (data.mock) {
-          document.getElementById('mock-banner').classList.remove('hidden');
-        }
-
+        if (!res.ok) { showError(data.error || 'Something went wrong.'); document.getElementById('products-grid').innerHTML = ''; return; }
+        if (data.mock) document.getElementById('mock-banner').style.display = 'flex';
         renderProducts(data.products, query);
-
-      } catch (err) {
-        showError('Network error — make sure you are running on Vercel (or `vercel dev` locally).');
+      } catch {
+        showError('Network error — run on Vercel or use `vercel dev` locally.');
         document.getElementById('products-grid').innerHTML = '';
       } finally {
         setLoading(false);
       }
     }
 
-    // Event listeners
     document.getElementById('generate-btn').addEventListener('click', () => {
-      const query = document.getElementById('search-input').value.trim();
-      if (query) fetchProducts(query);
+      const q = document.getElementById('search-input').value.trim();
+      if (q) fetchProducts(q);
     });
-
-    document.getElementById('search-input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        const query = e.target.value.trim();
-        if (query) fetchProducts(query);
-      }
+    document.getElementById('search-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') { const q = e.target.value.trim(); if (q) fetchProducts(q); }
     });
   </script>
 
