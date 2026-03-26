@@ -1,21 +1,42 @@
-// BrainGlimpse.ai — Serverless API Route
-// Proxies requests to RapidAPI's Real-Time Amazon Data API.
-// Set USE_MOCK_DATA=true in env to skip the real API and return dummy data.
+// BrainGlimpse.ai — Amazon Product Search
+// Proxies RapidAPI with Redis caching (24 h) and Upstash rate limiting.
+// Set USE_MOCK_DATA=true to skip the live API during dev/testing.
 
-// ── Rate limiter: 3 requests / IP / 60 s ──
-const RATE_LIMIT = 3;
-const WINDOW_MS  = 60_000;
-const ipLog      = new Map(); // ip -> [timestamp, ...]
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis }     from '@upstash/redis';
+import { getRedis }  from '../lib/redis.js';
+import { hashKey }   from '../lib/hash.js';
 
-function isRateLimited(ip) {
-  const now  = Date.now();
-  const hits = (ipLog.get(ip) || []).filter(t => now - t < WINDOW_MS);
-  if (hits.length >= RATE_LIMIT) return true;
-  hits.push(now);
-  ipLog.set(ip, hits);
-  return false;
+// ── Rate limiter: 3 requests / IP / 60 s (Upstash — persists across cold starts) ──
+let _ratelimit = null;
+function getRatelimit() {
+  if (_ratelimit) return _ratelimit;
+  if (!process.env.UPSTASH_REDIS_REST_URL) return null;
+  _ratelimit = new Ratelimit({
+    redis:   Redis.fromEnv(),
+    limiter: Ratelimit.slidingWindow(3, '60 s'),
+    prefix:  'bg_rl',
+  });
+  return _ratelimit;
 }
 
+// ── CORS ──
+const ALLOWED_ORIGINS = [
+  'https://brainglimpse.ai',
+  'https://www.brainglimpse.ai',
+  ...(process.env.NODE_ENV === 'development' ? ['http://localhost:3000'] : []),
+];
+
+function setCors(req, res) {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+}
+
+// ── Mock data ──
 const MOCK_PRODUCTS = [
   {
     asin: 'B09G9FPHY6',
@@ -73,38 +94,49 @@ const MOCK_PRODUCTS = [
   },
 ];
 
-const ALLOWED_ORIGINS = [
-  'https://brainglimpse.ai',
-  'https://www.brainglimpse.ai',
-];
-
 export default async function handler(req, res) {
-  const origin = req.headers.origin;
-  if (ALLOWED_ORIGINS.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-
-  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
-  if (isRateLimited(ip)) {
-    return res.status(429).json({ error: 'Too many searches. Please wait a minute and try again.' });
-  }
+  setCors(req, res);
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
-  const { query } = req.query;
-  if (!query || !query.trim()) {
-    return res.status(400).json({ error: 'A search query is required.' });
+  // ── Rate limit (Upstash; falls back gracefully if not configured) ──
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
+    .split(',')[0].trim();
+  const rl = getRatelimit();
+  if (rl) {
+    const { success } = await rl.limit(ip);
+    if (!success) {
+      return res.status(429).json({ error: 'Too many searches. Please wait a minute and try again.' });
+    }
   }
 
-  // ── Mock mode: skip real API to protect rate limit quota ──
+  const { query, page = '1' } = req.query;
+  const trimmed = (query || '').trim();
+  if (!trimmed) {
+    return res.status(400).json({ error: 'A search query is required.' });
+  }
+  if (trimmed.length > 200) {
+    return res.status(400).json({ error: 'Search query must be 200 characters or fewer.' });
+  }
+
+  // ── Mock mode ──
   if (process.env.USE_MOCK_DATA === 'true') {
     return res.status(200).json({ products: MOCK_PRODUCTS, mock: true });
   }
 
-  // ── Live mode ──
+  // ── Redis cache check ──
+  const redis    = getRedis();
+  const cacheKey = `amazon:${hashKey(`${trimmed}:${page}`)}`;
+  if (redis) {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      return res.status(200).json({ products: cached, cached: true });
+    }
+  }
+
+  // ── Live RapidAPI call ──
   if (!process.env.RAPIDAPI_KEY) {
     console.error('[BrainGlimpse] RAPIDAPI_KEY is not configured.');
     return res.status(500).json({ error: 'Our AI is currently unavailable. Please try again in a minute.' });
@@ -112,16 +144,16 @@ export default async function handler(req, res) {
 
   try {
     const url = new URL('https://real-time-amazon-data.p.rapidapi.com/search');
-    url.searchParams.set('query', query.trim());
-    url.searchParams.set('page', '1');
-    url.searchParams.set('country', 'US');
-    url.searchParams.set('sort_by', 'RELEVANCE');
+    url.searchParams.set('query',             trimmed);
+    url.searchParams.set('page',              page);
+    url.searchParams.set('country',           'US');
+    url.searchParams.set('sort_by',           'RELEVANCE');
     url.searchParams.set('product_condition', 'ALL');
 
     const response = await fetch(url.toString(), {
-      method: 'GET',
+      method:  'GET',
       headers: {
-        'x-rapidapi-key': process.env.RAPIDAPI_KEY,
+        'x-rapidapi-key':  process.env.RAPIDAPI_KEY,
         'x-rapidapi-host': 'real-time-amazon-data.p.rapidapi.com',
       },
     });
@@ -143,10 +175,16 @@ export default async function handler(req, res) {
     }
 
     const products = (data.data?.products || []).slice(0, 6);
+
+    // ── Cache result for 24 h ──
+    if (redis) {
+      await redis.set(cacheKey, products, { ex: 86_400 });
+    }
+
     return res.status(200).json({ products });
 
   } catch (err) {
-    console.error('[BrainGlimpse API Error]', err);
+    console.error('[BrainGlimpse] Search error:', err);
     return res.status(500).json({ error: 'Internal server error. Please try again.' });
   }
 }
