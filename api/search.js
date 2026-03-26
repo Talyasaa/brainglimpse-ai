@@ -101,6 +101,16 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed.' });
   }
 
+  // ── Input validation (before rate limit to avoid wasting quota) ──
+  const { query, page = '1' } = req.query;
+  const trimmed = (query || '').trim();
+  if (!trimmed) {
+    return res.status(400).json({ error: 'A search query is required.' });
+  }
+  if (trimmed.length > 200) {
+    return res.status(400).json({ error: 'Search query must be 200 characters or fewer.' });
+  }
+
   // ── Rate limit (Upstash; falls back gracefully if not configured) ──
   const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown')
     .split(',')[0].trim();
@@ -110,15 +120,6 @@ export default async function handler(req, res) {
     if (!success) {
       return res.status(429).json({ error: 'Too many searches. Please wait a minute and try again.' });
     }
-  }
-
-  const { query, page = '1' } = req.query;
-  const trimmed = (query || '').trim();
-  if (!trimmed) {
-    return res.status(400).json({ error: 'A search query is required.' });
-  }
-  if (trimmed.length > 200) {
-    return res.status(400).json({ error: 'Search query must be 200 characters or fewer.' });
   }
 
   // ── Mock mode ──
