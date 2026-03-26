@@ -2,6 +2,20 @@
 // Proxies requests to RapidAPI's Real-Time Amazon Data API.
 // Set USE_MOCK_DATA=true in env to skip the real API and return dummy data.
 
+// ── Rate limiter: 3 requests / IP / 60 s ──
+const RATE_LIMIT = 3;
+const WINDOW_MS  = 60_000;
+const ipLog      = new Map(); // ip -> [timestamp, ...]
+
+function isRateLimited(ip) {
+  const now  = Date.now();
+  const hits = (ipLog.get(ip) || []).filter(t => now - t < WINDOW_MS);
+  if (hits.length >= RATE_LIMIT) return true;
+  hits.push(now);
+  ipLog.set(ip, hits);
+  return false;
+}
+
 const MOCK_PRODUCTS = [
   {
     asin: 'B09G9FPHY6',
@@ -59,8 +73,22 @@ const MOCK_PRODUCTS = [
   },
 ];
 
+const ALLOWED_ORIGINS = [
+  'https://brainglimpse.ai',
+  'https://www.brainglimpse.ai',
+];
+
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+
+  const ip = (req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown').split(',')[0].trim();
+  if (isRateLimited(ip)) {
+    return res.status(429).json({ error: 'Too many searches. Please wait a minute and try again.' });
+  }
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed.' });
@@ -78,7 +106,8 @@ export default async function handler(req, res) {
 
   // ── Live mode ──
   if (!process.env.RAPIDAPI_KEY) {
-    return res.status(500).json({ error: 'RAPIDAPI_KEY environment variable is not set.' });
+    console.error('[BrainGlimpse] RAPIDAPI_KEY is not configured.');
+    return res.status(500).json({ error: 'Our AI is currently unavailable. Please try again in a minute.' });
   }
 
   try {
@@ -97,15 +126,14 @@ export default async function handler(req, res) {
       },
     });
 
-    // Graceful rate-limit handling
     if (response.status === 429) {
-      return res.status(429).json({
-        error: "You've hit the monthly API limit (100 requests). Set USE_MOCK_DATA=true or upgrade your RapidAPI plan.",
-      });
+      console.error('[BrainGlimpse] RapidAPI monthly quota exhausted.');
+      return res.status(429).json({ error: 'Our AI is currently overwhelmed, please try again in a minute.' });
     }
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: `Upstream API error: ${response.statusText}` });
+      console.error(`[BrainGlimpse] Upstream error: ${response.status} ${response.statusText}`);
+      return res.status(502).json({ error: 'Our AI is currently overwhelmed, please try again in a minute.' });
     }
 
     const data = await response.json();

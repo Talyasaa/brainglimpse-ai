@@ -23,13 +23,26 @@
 
   <style>
     * { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: #080502; }
+    html, body { margin: 0; padding: 0; background: #080E1A; }
     body { font-family: 'Plus Jakarta Sans', sans-serif; color: #FAF9F7; overflow-x: hidden; }
+
+    /* ── CSS variables ── */
+    :root {
+      --violet: #7C3AED;
+      --violet-lt: #A78BFA;
+      --blue: #3B82F6;
+      --blue-lt: #93C5FD;
+      --coral: #F97316;
+      --amber: #FBBF24;
+      --bg: #080E1A;
+      --card-bg: #0D1424;
+      --card-border: #1A2340;
+    }
 
     /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 5px; }
-    ::-webkit-scrollbar-track { background: #080502; }
-    ::-webkit-scrollbar-thumb { background: #2A1E14; border-radius: 99px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #1E2A45; border-radius: 99px; }
 
     /* ── Eye animations ── */
     @keyframes iris-breathe {
@@ -41,8 +54,8 @@
       50% { opacity: 0.75; }
     }
     @keyframes neural-pulse {
-      0%, 100% { opacity: 0.12; }
-      50% { opacity: 0.38; }
+      0%, 100% { opacity: 0.10; }
+      50% { opacity: 0.32; }
     }
     @keyframes float-up {
       from { opacity: 0; transform: translateY(28px); }
@@ -51,6 +64,21 @@
     @keyframes brain-spin {
       0%, 100% { transform: rotate(-4deg) scale(1); }
       50% { transform: rotate(4deg) scale(1.08); }
+    }
+
+    /* ── Gradient border animation ── */
+    @keyframes gradient-border {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes search-glow-pulse {
+      0%, 100% { opacity: 0.5; }
+      50%       { opacity: 1; }
+    }
+    @keyframes btn-pulse-glow {
+      0%, 100% { box-shadow: 0 0 18px rgba(124,58,237,0.35), 0 0 40px rgba(249,115,22,0.2); }
+      50%       { box-shadow: 0 0 32px rgba(124,58,237,0.6), 0 0 64px rgba(249,115,22,0.35); }
     }
 
     .iris-anim  { animation: iris-breathe 4s ease-in-out infinite; transform-origin: 260px 120px; }
@@ -67,30 +95,73 @@
     .fu4 { animation-delay: 0.55s; }
     .fu5 { animation-delay: 0.7s; }
 
-    /* ── Hero radial warm glow ── */
-    .hero-bg-glow {
+    /* ── Hero multi-glow background ── */
+    .hero-bg-violet {
       position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      width: 700px; height: 700px;
+      top: -10%; left: -8%;
+      width: 680px; height: 680px;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, rgba(251,191,36,0.06) 40%, transparent 70%);
+      background: radial-gradient(circle, rgba(124,58,237,0.18) 0%, rgba(124,58,237,0.06) 45%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-bg-blue {
+      position: absolute;
+      bottom: -10%; right: -8%;
+      width: 620px; height: 620px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(59,130,246,0.15) 0%, rgba(59,130,246,0.05) 45%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-bg-amber {
+      position: absolute;
+      top: 45%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 480px; height: 480px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(251,191,36,0.07) 0%, rgba(249,115,22,0.04) 45%, transparent 70%);
       pointer-events: none;
     }
 
-    /* ── Search ── */
+    /* ── Gradient headline text ── */
+    .gradient-headline {
+      background: linear-gradient(120deg, #A78BFA 0%, #60A5FA 40%, #F97316 80%, #FBBF24 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* ── Search shell with animated gradient border ── */
+    .search-shell-wrap {
+      position: relative;
+      border-radius: 22px;
+      padding: 2px;
+      background: linear-gradient(120deg, #7C3AED, #3B82F6, #F97316, #FBBF24, #7C3AED);
+      background-size: 300% 300%;
+      animation: gradient-border 4s ease infinite;
+    }
+    .search-shell-wrap::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 23px;
+      background: linear-gradient(120deg, #7C3AED, #3B82F6, #F97316, #FBBF24, #7C3AED);
+      background-size: 300% 300%;
+      animation: gradient-border 4s ease infinite, search-glow-pulse 4s ease-in-out infinite;
+      filter: blur(10px);
+      opacity: 0.45;
+      z-index: -1;
+    }
     .search-shell {
-      background: rgba(249,115,22,0.04);
-      border: 1.5px solid rgba(249,115,22,0.18);
+      background: rgba(13, 20, 36, 0.96);
       border-radius: 20px;
       padding: 10px;
       display: flex;
       gap: 10px;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      transition: background 0.3s;
+      position: relative;
     }
     .search-shell:focus-within {
-      border-color: rgba(249,115,22,0.5);
-      box-shadow: 0 0 60px rgba(249,115,22,0.1);
+      background: rgba(16, 24, 44, 0.99);
     }
     .search-shell input {
       flex: 1;
@@ -98,16 +169,24 @@
       border: none;
       outline: none;
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 18px;
-      color: #FAF9F7;
+      font-size: 20px;
+      color: #F0EEFF;
       padding: 14px 18px;
       min-width: 0;
+      letter-spacing: 0.01em;
     }
-    .search-shell input::placeholder { color: #4A3D30; }
+    .search-shell input::placeholder {
+      color: #3A4A6A;
+      font-style: italic;
+      font-weight: 300;
+    }
+    .search-shell input:focus::placeholder {
+      color: #4A5C80;
+    }
 
     /* ── CTA button ── */
     .btn-cta {
-      background: linear-gradient(135deg, #F97316 0%, #EA580C 55%, #C2410C 100%);
+      background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 45%, #F97316 100%);
       border: none;
       border-radius: 14px;
       padding: 14px 32px;
@@ -123,23 +202,32 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      animation: btn-pulse-glow 3s ease-in-out infinite;
     }
     .btn-cta::before {
       content: '';
       position: absolute; top: 0; left: -100%;
       width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
       transition: left 0.5s;
     }
     .btn-cta:hover::before { left: 100%; }
-    .btn-cta:hover { box-shadow: 0 0 32px rgba(249,115,22,0.5); transform: translateY(-1px); }
-    .btn-cta:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-cta:hover {
+      box-shadow: 0 0 42px rgba(124,58,237,0.6), 0 0 80px rgba(59,130,246,0.3);
+      transform: translateY(-1px);
+    }
+    .btn-cta:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      animation: none;
+    }
 
     /* ── Chips ── */
     .chip {
-      background: rgba(249,115,22,0.06);
-      border: 1px solid rgba(249,115,22,0.18);
-      color: #7A6655;
+      background: rgba(124,58,237,0.06);
+      border: 1px solid rgba(124,58,237,0.2);
+      color: #5A6A90;
       font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 11.5px;
       font-weight: 500;
@@ -148,12 +236,21 @@
       cursor: pointer;
       transition: all 0.2s;
     }
-    .chip:hover { background: rgba(249,115,22,0.14); border-color: rgba(249,115,22,0.4); color: #FBBF24; }
+    .chip:hover {
+      background: rgba(124,58,237,0.14);
+      border-color: rgba(124,58,237,0.45);
+      color: #A78BFA;
+    }
+    .chip.active {
+      background: rgba(124,58,237,0.22);
+      border-color: rgba(124,58,237,0.65);
+      color: #C4B5FD;
+    }
 
     /* ── Divider ── */
     .warm-line {
       height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(249,115,22,0.2), rgba(251,191,36,0.12), transparent);
+      background: linear-gradient(90deg, transparent, rgba(124,58,237,0.25), rgba(59,130,246,0.18), rgba(249,115,22,0.15), transparent);
     }
 
     /* ── Product grid ── */
@@ -164,23 +261,45 @@
     @media (min-width: 1800px) { .products-grid { columns: 5; } }
     .products-grid > * { break-inside: avoid; margin-bottom: 1.25rem; }
 
+    /* ── Card accent colors (per index) ── */
+    :root {
+      --card-accent-0: #7C3AED;
+      --card-accent-1: #3B82F6;
+      --card-accent-2: #F97316;
+      --card-accent-3: #FBBF24;
+      --card-accent-4: #EC4899;
+      --card-accent-5: #10B981;
+    }
+
     /* ── Card ── */
     .p-card {
-      background: #131008;
-      border: 1px solid #221910;
+      background: rgba(13, 20, 36, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border);
       border-radius: 18px;
       overflow: hidden;
       transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+      position: relative;
+    }
+    /* gradient top border applied via a pseudo-element (set inline per card) */
+    .p-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      z-index: 2;
+      pointer-events: none;
     }
     .p-card:hover {
-      transform: translateY(-4px);
-      border-color: rgba(249,115,22,0.32);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px rgba(249,115,22,0.15);
+      transform: translateY(-5px);
+      border-color: rgba(124,58,237,0.3);
+      box-shadow: 0 24px 60px rgba(0,0,0,0.55), 0 0 0 1px rgba(124,58,237,0.15);
     }
     .p-card img {
-      width: 100%; height: 200px;
-      object-fit: contain; object-position: center;
-      background: #0E0A06; padding: 14px;
+      width: 100%; aspect-ratio: 4/3;
+      object-fit: cover; object-position: center;
+      background: #0A1020;
       transition: transform 0.5s;
     }
     .p-card:hover img { transform: scale(1.04); }
@@ -190,20 +309,23 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
+
+    /* ── Score badge ── */
     .score-badge {
-      background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(251,191,36,0.08));
-      border: 1px solid rgba(249,115,22,0.28);
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 7px 12px;
       text-align: center;
+      border: 1px solid transparent;
     }
+
+    /* ── Amazon button ── */
     .btn-amz {
       display: block;
       width: 100%; text-align: center;
       padding: 10px;
       border-radius: 12px;
-      background: #1A1208;
-      border: 1px solid #2A1A0C;
+      background: rgba(15, 22, 40, 0.9);
+      border: 1px solid #1A2340;
       font-size: 13px;
       font-weight: 600;
       color: #FAF9F7;
@@ -214,11 +336,10 @@
     .btn-amz::after {
       content: '';
       position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(251,191,36,0.05));
       opacity: 0; transition: opacity 0.25s;
     }
     .btn-amz:hover::after { opacity: 1; }
-    .btn-amz:hover { border-color: rgba(249,115,22,0.4); transform: translateY(-1px); }
+    .btn-amz:hover { transform: translateY(-1px); }
 
     .tag-pill {
       font-size: 10px; font-weight: 700;
@@ -226,13 +347,20 @@
       border-radius: 99px; padding: 3px 10px;
     }
 
+    /* ── Scroll indicator ── */
+    @keyframes bounce-down {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(6px); }
+    }
+    .scroll-hint { animation: bounce-down 1.8s ease-in-out infinite; }
+
     /* ── Skeleton ── */
     @keyframes shimmer {
       from { background-position: -600px 0; }
       to   { background-position: 600px 0; }
     }
     .skel {
-      background: linear-gradient(90deg, #1a1208 25%, #231809 50%, #1a1208 75%);
+      background: linear-gradient(90deg, #0D1424 25%, #141E36 50%, #0D1424 75%);
       background-size: 600px 100%;
       animation: shimmer 1.4s infinite linear;
       border-radius: 8px;
@@ -247,29 +375,124 @@
       animation: spin 0.65s linear infinite;
       display: inline-block;
     }
+
+    /* ── Live dot ── */
+    @keyframes live-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.5); }
+      50%       { box-shadow: 0 0 0 4px rgba(124,58,237,0); }
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--violet-lt);
+      display: inline-block;
+      animation: live-pulse 2s ease-in-out infinite;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: linear-gradient(90deg, #A78BFA, #60A5FA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    /* ── Nav hover ── */
+    .nav-link {
+      font-size: 13px;
+      color: #5A7090;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-link:hover { color: #A78BFA; }
+
+    /* ── Typewriter cursor ── */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .tw-cursor { animation: blink 1s step-end infinite; color: #A78BFA; }
+
+    /* ── How it works ── */
+    .step-card {
+      background: rgba(13,20,36,0.7);
+      border: 1px solid rgba(26,35,64,0.8);
+      border-radius: 20px;
+      padding: 32px 28px;
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+      transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+    }
+    .step-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
+    .step-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+    .step-num {
+      position: absolute; top: 20px; right: 20px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 48px; font-weight: 800;
+      opacity: 0.06; line-height: 1;
+      -webkit-text-fill-color: transparent;
+      -webkit-text-stroke: 1px currentColor;
+    }
+
+    /* ── Feature strip ── */
+    .feat-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(13,20,36,0.6);
+      border: 1px solid rgba(26,35,64,0.7);
+      border-radius: 99px;
+      padding: 10px 20px;
+      font-size: 13px; color: #7A90B8; font-weight: 500;
+      white-space: nowrap;
+    }
+    .feat-pill span.icon { font-size: 16px; }
+
+    /* ── Bottom CTA section ── */
+    .cta-section {
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      padding: 100px 4rem;
+      border-top: 1px solid rgba(26,35,64,0.6);
+    }
+    .cta-section .bg-glow {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%,-50%);
+      width: 800px; height: 400px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(124,58,237,0.12) 0%, rgba(59,130,246,0.06) 45%, transparent 70%);
+      pointer-events: none;
+    }
   </style>
 </head>
 
 <body>
 
   <!-- ========== HEADER ========== -->
-  <header style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(42,30,20,0.5);backdrop-filter:blur(12px);background:rgba(8,5,2,0.85);">
+  <header style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(26,35,64,0.6);backdrop-filter:blur(16px);background:rgba(8,14,26,0.88);">
     <div style="padding: 0 4rem; height: 56px; display:flex; align-items:center; justify-content:space-between; max-width:100%;">
 
       <a href="#" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
-        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#FBBF24,#EA580C);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(234,88,12,0.35);">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#7C3AED,#3B82F6,#F97316);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,58,237,0.45);">
           <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:13px;color:white;">B</span>
         </div>
-        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:15px;color:#FAF9F7;">
-          BrainGlimpse<span style="color:#F97316;">.ai</span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:15px;color:#F0EEFF;">
+          BrainGlimpse<span style="background:linear-gradient(90deg,#A78BFA,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">.ai</span>
         </span>
       </a>
 
       <nav style="display:flex;align-items:center;gap:28px;">
-        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;transition:color 0.2s;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Features</a>
-        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Pricing</a>
-        <a href="#" style="font-size:13px;color:#7A6655;text-decoration:none;" onmouseover="this.style.color='#FAF9F7'" onmouseout="this.style.color='#7A6655'">Blog</a>
-        <button class="btn-cta" style="padding:8px 20px;font-size:13px;">Get Early Access</button>
+        <a href="#" class="nav-link">Features</a>
+        <a href="#" class="nav-link">Pricing</a>
+        <a href="#" class="nav-link">Blog</a>
+        <button class="btn-cta" style="padding:8px 20px;font-size:13px;animation:none;box-shadow:0 0 16px rgba(124,58,237,0.3);">Get Early Access</button>
       </nav>
 
     </div>
@@ -278,12 +501,14 @@
   <!-- ========== HERO ========== -->
   <section style="position:relative;min-height:calc(100vh - 56px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 4rem 80px;text-align:center;overflow:hidden;">
 
-    <!-- Warm glow bg -->
-    <div class="hero-bg-glow"></div>
+    <!-- Multi-glow background layers -->
+    <div class="hero-bg-violet"></div>
+    <div class="hero-bg-blue"></div>
+    <div class="hero-bg-amber"></div>
 
     <!-- Neural network SVG background -->
     <svg style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-      <g stroke="#F97316" stroke-width="0.6" class="neural-anim">
+      <g stroke="#7C3AED" stroke-width="0.6" class="neural-anim">
         <line x1="700" y1="450" x2="410" y2="190"/>
         <line x1="700" y1="450" x2="990" y2="190"/>
         <line x1="700" y1="450" x2="180" y2="490"/>
@@ -297,7 +522,7 @@
         <line x1="700" y1="450" x2="700" y2="60"/>
         <line x1="700" y1="450" x2="700" y2="840"/>
       </g>
-      <g stroke="#FBBF24" stroke-width="0.4" class="neural-anim d1">
+      <g stroke="#3B82F6" stroke-width="0.4" class="neural-anim d1">
         <line x1="410" y1="190" x2="180" y2="490"/>
         <line x1="990" y1="190" x2="1220" y2="460"/>
         <line x1="560" y1="720" x2="330" y2="760"/>
@@ -310,25 +535,25 @@
         <line x1="700" y1="60"  x2="990" y2="190"/>
       </g>
       <g class="neural-anim d2">
-        <circle cx="700" cy="450" r="3"   fill="#F97316" opacity="0.7"/>
-        <circle cx="410" cy="190" r="2"   fill="#FBBF24" opacity="0.5"/>
-        <circle cx="990" cy="190" r="2"   fill="#FBBF24" opacity="0.5"/>
-        <circle cx="180" cy="490" r="2"   fill="#F97316" opacity="0.35"/>
-        <circle cx="1220" cy="460" r="2"  fill="#F97316" opacity="0.35"/>
-        <circle cx="560" cy="720" r="1.5" fill="#FBBF24" opacity="0.3"/>
-        <circle cx="880" cy="730" r="1.5" fill="#FBBF24" opacity="0.3"/>
-        <circle cx="330" cy="760" r="1.5" fill="#F97316" opacity="0.25"/>
-        <circle cx="1090" cy="740" r="1.5" fill="#F97316" opacity="0.25"/>
-        <circle cx="80"  cy="260" r="1.5" fill="#FBBF24" opacity="0.2"/>
-        <circle cx="1320" cy="280" r="1.5" fill="#FBBF24" opacity="0.2"/>
-        <circle cx="700" cy="60"  r="2"   fill="#F97316" opacity="0.3"/>
-        <circle cx="700" cy="840" r="2"   fill="#F97316" opacity="0.3"/>
+        <circle cx="700" cy="450" r="3"   fill="#A78BFA" opacity="0.7"/>
+        <circle cx="410" cy="190" r="2"   fill="#60A5FA" opacity="0.55"/>
+        <circle cx="990" cy="190" r="2"   fill="#60A5FA" opacity="0.55"/>
+        <circle cx="180" cy="490" r="2"   fill="#A78BFA" opacity="0.4"/>
+        <circle cx="1220" cy="460" r="2"  fill="#A78BFA" opacity="0.4"/>
+        <circle cx="560" cy="720" r="1.5" fill="#FBBF24" opacity="0.35"/>
+        <circle cx="880" cy="730" r="1.5" fill="#FBBF24" opacity="0.35"/>
+        <circle cx="330" cy="760" r="1.5" fill="#F97316" opacity="0.28"/>
+        <circle cx="1090" cy="740" r="1.5" fill="#F97316" opacity="0.28"/>
+        <circle cx="80"  cy="260" r="1.5" fill="#60A5FA" opacity="0.22"/>
+        <circle cx="1320" cy="280" r="1.5" fill="#60A5FA" opacity="0.22"/>
+        <circle cx="700" cy="60"  r="2"   fill="#A78BFA" opacity="0.35"/>
+        <circle cx="700" cy="840" r="2"   fill="#A78BFA" opacity="0.35"/>
       </g>
     </svg>
 
     <!-- Eye SVG -->
     <div class="fade-up fu1" style="margin-bottom:36px;">
-      <svg width="460" height="220" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" style="max-width:88vw;filter:drop-shadow(0 0 40px rgba(249,115,22,0.2));">
+      <svg width="460" height="220" viewBox="0 0 520 240" xmlns="http://www.w3.org/2000/svg" style="max-width:88vw;filter:drop-shadow(0 0 48px rgba(124,58,237,0.3)) drop-shadow(0 0 24px rgba(249,115,22,0.18));">
         <defs>
           <radialGradient id="iris-g" cx="42%" cy="38%" r="62%">
             <stop offset="0%"   stop-color="#FDE68A"/>
@@ -338,8 +563,9 @@
             <stop offset="100%" stop-color="#7C2D12"/>
           </radialGradient>
           <radialGradient id="halo-g" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stop-color="#F97316" stop-opacity="0.55"/>
-            <stop offset="55%"  stop-color="#F97316" stop-opacity="0.15"/>
+            <stop offset="0%"   stop-color="#7C3AED" stop-opacity="0.45"/>
+            <stop offset="35%"  stop-color="#3B82F6" stop-opacity="0.2"/>
+            <stop offset="70%"  stop-color="#F97316" stop-opacity="0.1"/>
             <stop offset="100%" stop-color="#F97316" stop-opacity="0"/>
           </radialGradient>
           <filter id="glow-f" x="-40%" y="-40%" width="180%" height="180%">
@@ -359,7 +585,7 @@
         <ellipse cx="260" cy="120" rx="235" ry="118" fill="url(#halo-g)" class="glow-anim"/>
 
         <!-- Eye bed -->
-        <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z" fill="#100A05"/>
+        <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z" fill="#08101E"/>
 
         <!-- Iris -->
         <circle cx="260" cy="120" r="82" fill="url(#iris-g)" clip-path="url(#eye-c)" class="iris-anim" filter="url(#glow-f)"/>
@@ -381,23 +607,25 @@
         </g>
 
         <!-- Pupil -->
-        <circle cx="260" cy="120" r="37" fill="#060300" clip-path="url(#eye-c)"/>
+        <circle cx="260" cy="120" r="37" fill="#040810" clip-path="url(#eye-c)"/>
 
         <!-- Brain in pupil -->
         <text x="260" y="132" text-anchor="middle" font-size="28"
               clip-path="url(#eye-c)" class="brain-anim"
-              style="filter:drop-shadow(0 0 8px rgba(251,191,36,0.7))">🧠</text>
+              style="filter:drop-shadow(0 0 8px rgba(167,139,250,0.8))">🧠</text>
 
         <!-- Specular highlights -->
         <ellipse cx="228" cy="100" rx="17" ry="10" fill="white" opacity="0.58" clip-path="url(#eye-c)"/>
         <ellipse cx="244" cy="109" rx="6"  ry="4"  fill="white" opacity="0.28" clip-path="url(#eye-c)"/>
 
-        <!-- Eye outline -->
+        <!-- Eye outline — violet/blue blend -->
         <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z"
-              fill="none" stroke="#F97316" stroke-width="1.5" opacity="0.9" filter="url(#soft)"/>
+              fill="none" stroke="url(#halo-g)" stroke-width="1.5" opacity="0.9" filter="url(#soft)"/>
+        <path d="M 48 120 C 140 18 380 18 472 120 C 380 222 140 222 48 120 Z"
+              fill="none" stroke="#A78BFA" stroke-width="1" opacity="0.6" filter="url(#soft)"/>
 
         <!-- Upper lashes -->
-        <g stroke="#FBBF24" stroke-width="1.6" stroke-linecap="round" opacity="0.6" filter="url(#soft)">
+        <g stroke="#A78BFA" stroke-width="1.6" stroke-linecap="round" opacity="0.55" filter="url(#soft)">
           <line x1="152" y1="63" x2="140" y2="42"/>
           <line x1="186" y1="42" x2="180" y2="22"/>
           <line x1="222" y1="27" x2="219" y2="7"/>
@@ -408,7 +636,7 @@
         </g>
 
         <!-- Lower lashes -->
-        <g stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.3">
+        <g stroke="#60A5FA" stroke-width="1" stroke-linecap="round" opacity="0.28">
           <line x1="186" y1="198" x2="180" y2="216"/>
           <line x1="222" y1="211" x2="219" y2="229"/>
           <line x1="260" y1="218" x2="260" y2="236"/>
@@ -419,45 +647,57 @@
     </div>
 
     <!-- "You think it." -->
-    <p class="fade-up fu2" style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:500;color:#7A6655;letter-spacing:0.01em;margin-bottom:10px;">
+    <p class="fade-up fu2" style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:500;color:#7A90B8;letter-spacing:0.01em;margin-bottom:10px;">
       You think it.
     </p>
 
     <!-- Main headline -->
     <h1 class="fade-up fu3" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(52px,8vw,100px);line-height:0.95;letter-spacing:-0.02em;margin-bottom:24px;">
-      BrainGlimpse<br/>
-      <span style="color:#F97316;">finds it.</span>
+      <span class="gradient-headline">BrainGlimpse</span><br/>
+      <span style="color:#E0D8FF;opacity:0.9;">finds it.</span>
     </h1>
 
     <!-- Subheadline -->
-    <p class="fade-up fu4" style="font-size:17px;color:#7A6655;line-height:1.65;max-width:480px;margin:0 auto 48px;">
+    <p class="fade-up fu4" style="font-size:17px;color:#7A90B8;line-height:1.65;max-width:480px;margin:0 auto 48px;">
       Your personalized AI shopping feed for Amazon.<br/>
       Describe your vibe — we surface the perfect products.
     </p>
 
     <!-- Search box -->
     <div class="fade-up fu5" style="width:100%;max-width:860px;margin:0 auto;">
-      <div class="search-shell">
-        <input
-          id="search-input"
-          type="text"
-          placeholder="e.g., Aesthetic desk setup under $200..."
-          autocomplete="off"
-        />
-        <button id="generate-btn" class="btn-cta">
-          <span id="btn-text">Read My Mind ✦</span>
-          <span id="btn-spinner" class="spinner" style="display:none;"></span>
-        </button>
+      <div class="search-shell-wrap">
+        <div class="search-shell">
+          <input
+            id="search-input"
+            type="text"
+            placeholder="e.g., cozy minimalist desk setup under $300..."
+            autocomplete="off"
+          />
+          <button id="generate-btn" class="btn-cta">
+            <span id="btn-text">Read My Mind ✦</span>
+            <span id="btn-spinner" class="spinner" style="display:none;"></span>
+          </button>
+        </div>
       </div>
 
       <!-- Suggestion chips -->
       <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:18px;">
-        <button class="chip" onclick="fillSearch('cozy gaming setup')">cozy gaming setup</button>
-        <button class="chip" onclick="fillSearch('minimalist home office')">minimalist home office</button>
-        <button class="chip" onclick="fillSearch('Y2K fashion accessories')">Y2K accessories</button>
-        <button class="chip" onclick="fillSearch('aesthetic bedroom decor')">aesthetic bedroom</button>
-        <button class="chip" onclick="fillSearch('mechanical keyboard under $100')">mechanical keyboard</button>
-        <button class="chip" onclick="fillSearch('self care gift set')">self care</button>
+        <button class="chip" onclick="fillSearch(this,'cozy gaming setup')">cozy gaming setup</button>
+        <button class="chip" onclick="fillSearch(this,'minimalist home office')">minimalist home office</button>
+        <button class="chip" onclick="fillSearch(this,'Y2K fashion accessories')">Y2K accessories</button>
+        <button class="chip" onclick="fillSearch(this,'aesthetic bedroom decor')">aesthetic bedroom</button>
+        <button class="chip" onclick="fillSearch(this,'mechanical keyboard under $100')">mechanical keyboard</button>
+        <button class="chip" onclick="fillSearch(this,'self care gift set')">self care</button>
+      </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div style="position:absolute;bottom:36px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:5px;pointer-events:none;">
+      <span style="font-size:10px;color:#4A6080;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;">Explore</span>
+      <div class="scroll-hint">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6L9 12L15 6" stroke="#4A6080" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </div>
     </div>
 
@@ -470,11 +710,11 @@
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;">
       <div>
-        <p style="font-size:11px;font-weight:700;color:#F97316;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Curated for You</p>
-        <h2 id="feed-title" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;color:#FAF9F7;margin:0;">Today's AI Feed</h2>
+        <p class="section-label">Curated for You</p>
+        <h2 id="feed-title" style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:28px;color:#F0EEFF;margin:0;">Today's AI Feed</h2>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#4A3D30;">
-        <span style="width:7px;height:7px;border-radius:50%;background:#F97316;display:inline-block;animation:outer-glow-pulse 2s infinite;"></span>
+      <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#5A7090;">
+        <span class="live-dot"></span>
         Live · Powered by Amazon
       </div>
     </div>
@@ -486,9 +726,15 @@
     </div>
 
     <!-- Mock banner -->
-    <div id="mock-banner" style="display:none;align-items:center;gap:12px;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.18);border-radius:14px;padding:12px 20px;margin-bottom:24px;">
+    <div id="mock-banner" style="display:none;align-items:center;gap:12px;background:rgba(124,58,237,0.07);border:1px solid rgba(124,58,237,0.2);border-radius:14px;padding:12px 20px;margin-bottom:24px;">
       <span style="font-size:14px;">🧪</span>
-      <p style="color:#FDE68A;font-size:12px;margin:0;">Mock mode active — showing demo products. Set <code style="background:rgba(255,255,255,0.08);padding:2px 6px;border-radius:4px;color:#FCD34D;">USE_MOCK_DATA=false</code> to use the live API.</p>
+      <p style="color:#C4B5FD;font-size:12px;margin:0;flex:1;">Showing demo products.</p>
+      <button onclick="document.getElementById('mock-banner').style.display='none'" style="background:none;border:none;color:#4A5C80;cursor:pointer;font-size:16px;line-height:1;padding:0 2px;" aria-label="Dismiss">×</button>
+    </div>
+
+    <!-- Result meta bar -->
+    <div id="result-meta" style="display:none;align-items:center;justify-content:space-between;margin-bottom:20px;">
+      <span id="result-count" style="font-size:12px;color:#5A7090;font-weight:500;"></span>
     </div>
 
     <!-- Products grid -->
@@ -496,25 +742,87 @@
 
   </section>
 
+  <!-- ========== HOW IT WORKS ========== -->
+  <section style="padding:80px 4rem;width:100%;border-top:1px solid rgba(26,35,64,0.6);">
+    <div style="text-align:center;margin-bottom:52px;">
+      <p class="section-label" style="display:inline-block;">How it works</p>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(28px,4vw,46px);color:#F0EEFF;margin:8px 0 0;letter-spacing:-0.02em;">Three seconds to your perfect product</h2>
+    </div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;max-width:1100px;margin:0 auto;">
+
+      <!-- Step 1 -->
+      <div class="step-card" style="border-color:rgba(124,58,237,0.25);">
+        <span class="step-num" style="color:#7C3AED;">01</span>
+        <div class="step-icon" style="background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);">🧠</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:#E8E4FF;margin:0 0 10px;">Describe your vibe</h3>
+        <p style="font-size:14px;color:#5A7090;line-height:1.65;margin:0;">Don't search with keywords. Write like you're texting a friend — "cozy minimalist desk under $200" or "Y2K accessories that slap".</p>
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step-card" style="border-color:rgba(59,130,246,0.25);">
+        <span class="step-num" style="color:#3B82F6;">02</span>
+        <div class="step-icon" style="background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.25);">⚡</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:#E8E4FF;margin:0 0 10px;">AI reads your mind</h3>
+        <p style="font-size:14px;color:#5A7090;line-height:1.65;margin:0;">Our AI parses intent, style, and budget — then scans millions of Amazon listings to surface only the ones that actually match.</p>
+      </div>
+
+      <!-- Step 3 -->
+      <div class="step-card" style="border-color:rgba(249,115,22,0.25);">
+        <span class="step-num" style="color:#F97316;">03</span>
+        <div class="step-icon" style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.25);">🛒</div>
+        <h3 style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:700;color:#E8E4FF;margin:0 0 10px;">Shop with confidence</h3>
+        <p style="font-size:14px;color:#5A7090;line-height:1.65;margin:0;">Every result shows a Match Score, real pricing, and links straight to Amazon. No ads, no fluff — just the best picks for you.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ========== FEATURE STRIP ========== -->
+  <section style="padding:40px 4rem;width:100%;border-top:1px solid rgba(26,35,64,0.4);">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;">
+      <div class="feat-pill"><span class="icon">✦</span> AI-powered intent matching</div>
+      <div class="feat-pill"><span class="icon">🎯</span> Personalized Match Score</div>
+      <div class="feat-pill"><span class="icon">⚡</span> Real-time Amazon data</div>
+      <div class="feat-pill"><span class="icon">🛡️</span> No tracking, no ads</div>
+      <div class="feat-pill"><span class="icon">🔄</span> Instant re-search</div>
+      <div class="feat-pill"><span class="icon">🌈</span> Vibe-based discovery</div>
+    </div>
+  </section>
+
+  <!-- ========== BOTTOM CTA ========== -->
+  <section class="cta-section">
+    <div class="bg-glow"></div>
+    <div style="position:relative;z-index:1;">
+      <p class="section-label" style="display:inline-block;margin-bottom:16px;">Start for free</p>
+      <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(32px,5vw,58px);color:#F0EEFF;margin:0 0 16px;letter-spacing:-0.02em;">
+        What's on your mind<span style="color:#A78BFA;">?</span>
+      </h2>
+      <p style="font-size:16px;color:#5A7090;max-width:420px;margin:0 auto 40px;line-height:1.7;">Just describe what you're looking for. BrainGlimpse does the rest.</p>
+      <button onclick="document.getElementById('search-input').focus();window.scrollTo({top:0,behavior:'smooth'})" class="btn-cta" style="margin:0 auto;font-size:16px;padding:16px 40px;">
+        Read My Mind ✦
+      </button>
+    </div>
+  </section>
+
   <!-- ========== FOOTER ========== -->
-  <footer style="border-top:1px solid rgba(42,30,20,0.5);padding:28px 4rem;">
+  <footer style="border-top:1px solid rgba(26,35,64,0.6);padding:28px 4rem;">
     <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;">
 
       <div style="display:flex;align-items:center;gap:9px;">
-        <div style="width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#FBBF24,#EA580C);display:flex;align-items:center;justify-content:center;">
+        <div style="width:20px;height:20px;border-radius:6px;background:linear-gradient(135deg,#7C3AED,#3B82F6,#F97316);display:flex;align-items:center;justify-content:center;">
           <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:10px;color:white;">B</span>
         </div>
-        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;color:#4A3D30;">
-          BrainGlimpse<span style="color:#C2410C;">.ai</span>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-size:13px;color:#2A3A5C;">
+          BrainGlimpse<span style="color:#7C3AED;">.ai</span>
         </span>
       </div>
 
-      <p style="font-size:12px;color:#3A2D20;margin:0;">© 2026 BrainGlimpse.ai — All rights reserved.</p>
+      <p style="font-size:12px;color:#4A6080;margin:0;">© 2026 BrainGlimpse.ai — All rights reserved.</p>
 
       <div style="display:flex;gap:20px;">
-        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Privacy</a>
-        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Terms</a>
-        <a href="#" style="font-size:12px;color:#3A2D20;text-decoration:none;" onmouseover="this.style.color='#7A6655'" onmouseout="this.style.color='#3A2D20'">Contact</a>
+        <a href="#" class="nav-link" style="font-size:12px;">Privacy</a>
+        <a href="#" class="nav-link" style="font-size:12px;">Terms</a>
+        <a href="#" class="nav-link" style="font-size:12px;">Contact</a>
       </div>
 
     </div>
@@ -533,20 +841,41 @@
       { bg:'rgba(194,65,12,0.15)',  border:'rgba(194,65,12,0.3)',  color:'#FDBA74', label:'New Drop' },
     ];
 
+    // Per-card accent colors matching CSS variables
+    const CARD_ACCENTS = [
+      { color: '#7C3AED', rgb: '124,58,237' },
+      { color: '#3B82F6', rgb: '59,130,246' },
+      { color: '#F97316', rgb: '249,115,22' },
+      { color: '#FBBF24', rgb: '251,191,36' },
+      { color: '#EC4899', rgb: '236,72,153' },
+      { color: '#10B981', rgb: '16,185,129' },
+    ];
+
     function brainScore(r) {
-      return Math.min(10, (parseFloat(r) || 4.0) / 5 * 3 + 7).toFixed(1);
+      const stars = parseFloat(r) || 3.5;
+      return Math.min(10, Math.max(0, (stars - 3.5) / 1.5 * 6 + 4)).toFixed(1);
     }
     function amazonUrl(asin) {
       return `https://www.amazon.com/dp/${asin}?tag=${AFFILIATE_TAG}`;
     }
-    function fillSearch(q) {
+    function fillSearch(chip, q) {
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
       document.getElementById('search-input').value = q;
       fetchProducts(q);
     }
 
+    const LOADING_MSGS = [
+      'Scanning Amazon…',
+      'Ranking results…',
+      'Filtering the best…',
+      'Almost there…',
+    ];
+    let loadingInterval = null;
+
     function showSkeletons() {
       document.getElementById('products-grid').innerHTML = Array.from({length:6}).map(() => `
-        <div style="background:#131008;border:1px solid #221910;border-radius:18px;overflow:hidden;">
+        <div style="background:rgba(13,20,36,0.85);border:1px solid #1A2340;border-radius:18px;overflow:hidden;">
           <div class="skel" style="height:200px;border-radius:0;"></div>
           <div style="padding:20px;">
             <div class="skel" style="height:11px;width:35%;margin-bottom:12px;"></div>
@@ -561,45 +890,100 @@
         </div>`).join('');
     }
 
-    function renderProducts(products, query) {
+    let currentQuery = '';
+    let currentPage  = 1;
+
+    function renderProducts(products, query, append = false) {
       const grid = document.getElementById('products-grid');
-      if (!products?.length) {
+      if (!products?.length && !append) {
         grid.innerHTML = `<div style="text-align:center;padding:80px 0;grid-column:1/-1;">
           <p style="font-size:40px;margin-bottom:12px;">🔍</p>
-          <p style="color:#7A6655;font-size:15px;">No results for "<span style="color:#FAF9F7;">${query}</span>".<br/>Try a different search.</p>
+          <p style="color:#4A5C80;font-size:15px;">No results for "<span style="color:#F0EEFF;">${query}</span>".<br/>Try a different search.</p>
         </div>`;
+        document.getElementById('result-meta').style.display = 'none';
         return;
       }
-      grid.innerHTML = products.map((p, i) => {
-        const t     = TAGS[i % TAGS.length];
-        const score = brainScore(p.product_star_rating);
-        const price = p.product_price || 'See Amazon';
-        const photo = p.product_photo || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
-        const url   = p.asin ? amazonUrl(p.asin) : '#';
-        const cat   = p.product_category || 'Amazon';
+
+      const cards = products.map((p, i) => {
+        const t      = TAGS[i % TAGS.length];
+        const acc    = CARD_ACCENTS[i % CARD_ACCENTS.length];
+        const score  = brainScore(p.product_star_rating);
+        const price  = p.product_price || 'See Amazon';
+        const photo  = p.product_photo || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&q=80';
+        const url    = p.asin ? amazonUrl(p.asin) : '#';
+        const cat    = p.product_category || 'Amazon';
         return `
-        <div class="p-card">
-          <div style="position:relative;overflow:hidden;background:#0E0A06;">
+        <div class="p-card" style="--card-accent:${acc.color};--card-accent-rgb:${acc.rgb};">
+          <div style="height:2px;background:linear-gradient(90deg,${acc.color},rgba(${acc.rgb},0.3));"></div>
+          <div style="position:relative;overflow:hidden;background:#080E1A;">
             <img src="${p.product_photo || photo}"
                  alt="${p.product_title}"
                  onerror="this.src='${photo}'" />
-            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(19,16,8,0.5),transparent);pointer-events:none;"></div>
+            <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(8,14,26,0.6),transparent);pointer-events:none;"></div>
             <span class="tag-pill" style="position:absolute;top:12px;left:12px;background:${t.bg};border:1px solid ${t.border};color:${t.color};">${t.label}</span>
           </div>
           <div style="padding:20px;">
-            <p style="font-size:10.5px;color:#4A3D30;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 6px;">${cat}</p>
-            <h3 class="p-title" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#FAF9F7;line-height:1.4;margin:0 0 16px;">${p.product_title}</h3>
+            <p style="font-size:10.5px;color:#2A3A5C;text-transform:uppercase;letter-spacing:0.1em;margin:0 0 6px;">${cat}</p>
+            <h3 class="p-title" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:600;color:#E8E4FF;line-height:1.4;margin:0 0 16px;">${p.product_title}</h3>
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;color:#FAF9F7;">${price}</span>
-              <div class="score-badge">
-                <p style="font-size:9px;color:#FDBA74;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin:0;">Brain Score</p>
-                <p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:18px;color:#FDBA74;line-height:1.1;margin:0;">${score}<span style="font-size:10px;font-weight:500;color:#EA580C;">/10</span></p>
+              <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:22px;color:#F0EEFF;">${price}</span>
+              <div class="score-badge" style="background:rgba(${acc.rgb},0.1);border-color:rgba(${acc.rgb},0.25);">
+                <p style="font-size:9px;color:${acc.color};text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin:0;opacity:0.85;">Match Score</p>
+                <p style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:18px;color:${acc.color};line-height:1.1;margin:0;">${score}<span style="font-size:10px;font-weight:500;opacity:0.6;">/10</span></p>
               </div>
             </div>
-            <a href="${url}" target="_blank" rel="noopener noreferrer sponsored" class="btn-amz">View on Amazon →</a>
+            <a href="${url}" target="_blank" rel="noopener noreferrer sponsored" class="btn-amz"
+               style="border-color:rgba(${acc.rgb},0.2);"
+               onmouseover="this.style.borderColor='rgba(${acc.rgb},0.5)';this.style.boxShadow='0 0 20px rgba(${acc.rgb},0.15)';this.style.background='rgba(${acc.rgb},0.08)'"
+               onmouseout="this.style.borderColor='rgba(${acc.rgb},0.2)';this.style.boxShadow='none';this.style.background='rgba(15,22,40,0.9)'">View on Amazon →</a>
           </div>
         </div>`;
       }).join('');
+
+      if (append) {
+        // remove old Load More before appending
+        const old = grid.querySelector('.load-more-row');
+        if (old) old.remove();
+        grid.insertAdjacentHTML('beforeend', cards);
+      } else {
+        grid.innerHTML = cards;
+      }
+
+      const total = grid.querySelectorAll('.p-card').length;
+      const meta  = document.getElementById('result-meta');
+      meta.style.display = 'flex';
+      meta.querySelector('#result-count').textContent = `Showing ${total} result${total !== 1 ? 's' : ''}`;
+
+      // Load More button (hidden when fewer than 6 returned — likely end of results)
+      if (products.length >= 6) {
+        grid.insertAdjacentHTML('beforeend', `
+          <div class="load-more-row" style="break-inside:avoid;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:center;padding:24px 0;">
+            <button onclick="loadMore()" style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);border-radius:14px;padding:12px 32px;font-family:'Bricolage Grotesque',sans-serif;font-size:14px;font-weight:600;color:#A78BFA;cursor:pointer;transition:all 0.2s;"
+              onmouseover="this.style.background='rgba(124,58,237,0.18)';this.style.borderColor='rgba(124,58,237,0.5)'"
+              onmouseout="this.style.background='rgba(124,58,237,0.08)';this.style.borderColor='rgba(124,58,237,0.25)'">
+              Load More
+            </button>
+          </div>`);
+      }
+    }
+
+    async function loadMore() {
+      currentPage++;
+      const btn = document.querySelector('.load-more-row button');
+      if (btn) { btn.textContent = 'Loading…'; btn.disabled = true; }
+      try {
+        const res  = await fetch(`/api/search?query=${encodeURIComponent(currentQuery)}&page=${currentPage}`);
+        const data = await res.json();
+        if (res.ok && data.products?.length) {
+          renderProducts(data.products, currentQuery, true);
+        } else {
+          const row = document.querySelector('.load-more-row');
+          if (row) row.remove();
+        }
+      } catch {
+        const row = document.querySelector('.load-more-row');
+        if (row) row.remove();
+      }
     }
 
     function setLoading(on) {
@@ -607,8 +991,19 @@
       const txt = document.getElementById('btn-text');
       const sp  = document.getElementById('btn-spinner');
       btn.disabled = on;
-      txt.textContent = on ? 'Finding…' : 'Read My Mind ✦';
       sp.style.display = on ? 'inline-block' : 'none';
+      if (on) {
+        let i = 0;
+        txt.textContent = LOADING_MSGS[0];
+        loadingInterval = setInterval(() => {
+          i = (i + 1) % LOADING_MSGS.length;
+          txt.textContent = LOADING_MSGS[i];
+        }, 1200);
+      } else {
+        clearInterval(loadingInterval);
+        loadingInterval = null;
+        txt.textContent = 'Read My Mind ✦';
+      }
     }
 
     function showError(msg) {
@@ -621,13 +1016,16 @@
     async function fetchProducts(query) {
       hideError();
       document.getElementById('mock-banner').style.display = 'none';
+      document.getElementById('result-meta').style.display = 'none';
+      currentQuery = query;
+      currentPage  = 1;
       setLoading(true);
       showSkeletons();
       document.getElementById('feed-title').textContent = `Results for "${query}"`;
       document.getElementById('products-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       try {
-        const res  = await fetch(`/api/search?query=${encodeURIComponent(query)}`);
+        const res  = await fetch(`/api/search?query=${encodeURIComponent(query)}&page=1`);
         const data = await res.json();
         if (!res.ok) { showError(data.error || 'Something went wrong.'); document.getElementById('products-grid').innerHTML = ''; return; }
         if (data.mock) document.getElementById('mock-banner').style.display = 'flex';
@@ -647,6 +1045,37 @@
     document.getElementById('search-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') { const q = e.target.value.trim(); if (q) fetchProducts(q); }
     });
+
+    // ── Typewriter placeholder ──
+    const TW_PHRASES = [
+      'cozy minimalist desk setup under $200…',
+      'Y2K accessories that actually slap…',
+      'aesthetic bedroom fairy lights and decor…',
+      'mechanical keyboard under $100 for typing…',
+      'self care gift set for my best friend…',
+      'gaming chair that looks good on camera…',
+      'plants that survive if I forget to water them…',
+    ];
+    const twInput = document.getElementById('search-input');
+    let twPhrase = 0, twChar = 0, twDeleting = false, twPause = 0;
+
+    function typewriterTick() {
+      if (document.activeElement === twInput) { setTimeout(typewriterTick, 200); return; }
+      const phrase = TW_PHRASES[twPhrase];
+      if (twPause > 0) { twPause--; setTimeout(typewriterTick, 80); return; }
+      if (!twDeleting) {
+        twChar++;
+        twInput.placeholder = phrase.slice(0, twChar);
+        if (twChar === phrase.length) { twDeleting = true; twPause = 18; }
+        setTimeout(typewriterTick, 55);
+      } else {
+        twChar--;
+        twInput.placeholder = phrase.slice(0, twChar);
+        if (twChar === 0) { twDeleting = false; twPhrase = (twPhrase + 1) % TW_PHRASES.length; twPause = 4; }
+        setTimeout(typewriterTick, 28);
+      }
+    }
+    setTimeout(typewriterTick, 1200);
   </script>
 
 </body>
