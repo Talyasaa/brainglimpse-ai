@@ -121,6 +121,8 @@
     .products-grid { columns: 1; gap: 1.25rem; }
     @media (min-width: 640px)  { .products-grid { columns: 2; } }
     @media (min-width: 1024px) { .products-grid { columns: 3; } }
+    @media (min-width: 1400px) { .products-grid { columns: 4; } }
+    @media (min-width: 1800px) { .products-grid { columns: 5; } }
     .products-grid > * { break-inside: avoid; margin-bottom: 1.25rem; }
 
     /* Scrollbar */
@@ -184,7 +186,7 @@
 
   <!-- ========== HEADER ========== -->
   <header class="relative z-10 border-b border-white/[0.06] backdrop-blur-sm bg-black/20 sticky top-0">
-    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
+    <div class="w-full px-8 sm:px-16 h-14 flex items-center justify-between">
       <a href="#" class="flex items-center gap-2 group">
         <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/40">
           <span class="text-white font-black text-xs tracking-tight">B</span>
@@ -205,8 +207,8 @@
   </header>
 
   <!-- ========== HERO ========== -->
-  <section class="relative z-10 pt-24 pb-20 px-5 sm:px-8 text-center">
-    <div class="max-w-4xl mx-auto">
+  <section class="relative z-10 pt-24 pb-20 px-8 sm:px-16 text-center">
+    <div class="w-full max-w-4xl mx-auto">
 
       <div class="fade-up delay-1 inline-flex items-center gap-2 bg-white/[0.05] border border-white/[0.1] rounded-full px-3.5 py-1.5 mb-8">
         <span class="logo-dot w-1.5 h-1.5 rounded-full bg-violet-400 inline-block"></span>
@@ -249,11 +251,11 @@
       </div>
 
     </div>
-    <div class="mt-20 max-w-6xl mx-auto border-t border-white/[0.05]"></div>
+    <div class="mt-20 w-full border-t border-white/[0.05]"></div>
   </section>
 
   <!-- ========== CURATED FEED ========== -->
-  <section class="relative z-10 px-5 sm:px-8 pb-28 max-w-6xl mx-auto">
+  <section class="relative z-10 px-8 sm:px-16 pb-28 w-full">
 
     <div class="flex items-center justify-between mb-8">
       <div>
@@ -285,7 +287,7 @@
 
   <!-- ========== FOOTER ========== -->
   <footer class="relative z-10 border-t border-white/[0.06] py-8 px-5 sm:px-8">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="w-full px-8 sm:px-16 flex flex-col sm:flex-row items-center justify-between gap-4">
       <div class="flex items-center gap-2">
         <div class="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
           <span class="text-white font-black text-[9px]">B</span>
