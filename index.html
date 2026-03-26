@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainGlimpse.ai — Your AI Shopping Feed</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: '#7C3AED',
+            'brand-light': '#A78BFA',
+            surface: '#0F0F0F',
+            card: '#141414',
+            border: '#1F1F1F',
+            muted: '#6B7280',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          backgroundImage: {
+            'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    * { -webkit-font-smoothing: antialiased; }
+
+    body { background-color: #0A0A0A; }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* Glow orbs */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+    }
+
+    /* Shiny button gradient */
+    .btn-generate {
+      background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #5B21B6 100%);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+    .btn-generate::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transition: left 0.5s ease;
+    }
+    .btn-generate:hover::before { left: 100%; }
+    .btn-generate:hover {
+      box-shadow: 0 0 32px rgba(124, 58, 237, 0.6), 0 0 64px rgba(124, 58, 237, 0.2);
+      transform: translateY(-1px);
+    }
+
+    /* Card hover */
+    .product-card {
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.3);
+      border-color: rgba(124,58,237,0.4) !important;
+    }
+
+    /* Brain score badge shimmer */
+    .score-badge {
+      background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(167,139,250,0.15));
+      border: 1px solid rgba(124,58,237,0.35);
+    }
+
+    /* Amazon button */
+    .btn-amazon {
+      background: linear-gradient(135deg, #1a1a1a, #252525);
+      border: 1px solid #2a2a2a;
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-amazon::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(167,139,250,0.05));
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .btn-amazon:hover::after { opacity: 1; }
+    .btn-amazon:hover {
+      border-color: rgba(124,58,237,0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+
+    /* Search input focus glow */
+    .search-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 1px rgba(124,58,237,0.6), 0 0 24px rgba(124,58,237,0.15);
+    }
+
+    /* Logo dot pulse */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.85); }
+    }
+    .logo-dot { animation: pulse-dot 2.5s ease-in-out infinite; }
+
+    /* Fade in */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-up { animation: fadeUp 0.7s ease forwards; }
+    .delay-1 { animation-delay: 0.1s; opacity: 0; }
+    .delay-2 { animation-delay: 0.25s; opacity: 0; }
+    .delay-3 { animation-delay: 0.4s; opacity: 0; }
+    .delay-4 { animation-delay: 0.55s; opacity: 0; }
+
+    /* Grid masonry-like layout */
+    .products-grid {
+      columns: 1;
+      gap: 1.25rem;
+    }
+    @media (min-width: 640px) { .products-grid { columns: 2; } }
+    @media (min-width: 1024px) { .products-grid { columns: 3; } }
+    .products-grid > * { break-inside: avoid; margin-bottom: 1.25rem; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0A0A0A; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 999px; }
+
+    /* Tag pills */
+    .tag-pill {
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+
+<body class="text-white font-sans relative overflow-x-hidden">
+
+  <!-- Background glow orbs -->
+  <div class="glow-orb w-[600px] h-[600px] bg-purple-900/20 top-[-200px] left-[-200px]"></div>
+  <div class="glow-orb w-[400px] h-[400px] bg-violet-800/15 top-[40%] right-[-100px]"></div>
+  <div class="glow-orb w-[300px] h-[300px] bg-purple-700/10 bottom-[10%] left-[20%]"></div>
+
+  <!-- ========== HEADER ========== -->
+  <header class="relative z-10 border-b border-white/[0.06] backdrop-blur-sm bg-black/20 sticky top-0">
+    <div class="max-w-6xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
+
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 group">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center shadow-lg shadow-purple-900/40">
+          <span class="text-white font-black text-xs tracking-tight">D</span>
+        </div>
+        <span class="text-white font-semibold text-[15px] tracking-tight">
+          BrainGlimpse<span class="text-violet-400">.ai</span>
+        </span>
+      </a>
+
+      <!-- Nav items -->
+      <nav class="hidden sm:flex items-center gap-6">
+        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Features</a>
+        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Pricing</a>
+        <a href="#" class="text-[13px] text-gray-400 hover:text-white transition-colors">Blog</a>
+      </nav>
+
+      <!-- CTA -->
+      <button class="btn-generate px-4 py-1.5 rounded-lg text-[13px] font-semibold text-white">
+        Get Early Access
+      </button>
+
+    </div>
+  </header>
+
+  <!-- ========== HERO ========== -->
+  <section class="relative z-10 pt-24 pb-20 px-5 sm:px-8 text-center">
+    <div class="max-w-4xl mx-auto">
+
+      <!-- Eyebrow badge -->
+      <div class="fade-up delay-1 inline-flex items-center gap-2 bg-white/[0.05] border border-white/[0.1] rounded-full px-3.5 py-1.5 mb-8">
+        <span class="logo-dot w-1.5 h-1.5 rounded-full bg-violet-400 inline-block"></span>
+        <span class="text-[11px] font-medium text-gray-300 tracking-wide uppercase">AI-Powered Shopping — Now in Beta</span>
+      </div>
+
+      <!-- Headline -->
+      <h1 class="fade-up delay-2 text-5xl sm:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight text-white mb-6">
+        You think it.<br />
+        <span class="bg-gradient-to-r from-violet-400 via-purple-400 to-fuchsia-400 bg-clip-text text-transparent">
+          BrainGlimpse finds it.
+        </span>
+      </h1>
+
+      <!-- Subheadline -->
+      <p class="fade-up delay-3 text-gray-400 text-lg sm:text-xl leading-relaxed max-w-xl mx-auto mb-12">
+        Your personalized AI shopping feed for Amazon. Tell us your vibe,<br class="hidden sm:block" />
+        we curate the perfect products.
+      </p>
+
+      <!-- Search bar -->
+      <div class="fade-up delay-4 max-w-2xl mx-auto">
+        <div class="flex flex-col sm:flex-row gap-3 bg-white/[0.04] border border-white/[0.1] rounded-2xl p-2 backdrop-blur-md shadow-2xl shadow-black/40">
+          <input
+            type="text"
+            class="search-input flex-1 bg-transparent border-0 text-white placeholder-gray-500 text-[15px] px-4 py-3 rounded-xl transition-all"
+            placeholder="e.g., Aesthetic desk setup under $200..."
+          />
+          <button class="btn-generate px-6 py-3 rounded-xl text-[14px] font-bold text-white whitespace-nowrap">
+            Generate Feed ✦
+          </button>
+        </div>
+        <p class="mt-3 text-[12px] text-gray-600">
+          Try: "cozy gaming setup", "minimalist home office", "Y2K fashion accessories"
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Decorative line -->
+    <div class="mt-20 max-w-6xl mx-auto border-t border-white/[0.05]"></div>
+  </section>
+
+  <!-- ========== CURATED FEED ========== -->
+  <section class="relative z-10 px-5 sm:px-8 pb-28 max-w-6xl mx-auto">
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h2 class="text-[13px] font-semibold text-violet-400 uppercase tracking-widest mb-1">Curated for You</h2>
+        <p class="text-white font-bold text-xl">Today's AI Feed</p>
+      </div>
+      <div class="flex items-center gap-2 text-[12px] text-gray-500">
+        <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
+        Live · Updated 2 min ago
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid">
+
+      <!-- Card 1 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1593640408182-31c228b5ec5b?w=600&q=80"
+            alt="Minimal Desk Setup"
+            class="w-full h-52 object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-violet-500/20 border border-violet-500/30 text-violet-300 rounded-full px-2.5 py-1">Trending</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Tech / Workspace</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">FLEXISPOT Pro Standing Desk — Walnut Edition</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$179.99</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.8<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&q=80"
+            alt="Mechanical Keyboard"
+            class="w-full h-64 object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-green-500/20 border border-green-500/30 text-green-300 rounded-full px-2.5 py-1">Best Value</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Peripherals</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">Keychron Q1 Pro — Wireless Mechanical Keyboard</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$49.99</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.5<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80"
+            alt="Monitor Light Bar"
+            class="w-full h-44 object-cover object-top transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-yellow-500/20 border border-yellow-500/30 text-yellow-300 rounded-full px-2.5 py-1">Top Rated</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Lighting</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">BenQ ScreenBar Halo — Monitor Light</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$89.00</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.7<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1545127398-14699f92334b?w=600&q=80"
+            alt="Desk Plant"
+            class="w-full h-60 object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-teal-500/20 border border-teal-500/30 text-teal-300 rounded-full px-2.5 py-1">Aesthetic</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Decor</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">Costa Farms Succulent Desk Collection — 4-Pack</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$24.99</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.2<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 5 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=600&q=80"
+            alt="Logitech MX Keys"
+            class="w-full h-48 object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded-full px-2.5 py-1">Editor's Pick</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Audio</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">Sony WH-1000XM5 — Noise Cancelling Headphones</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$279.99</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.9<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+      <!-- Card 6 -->
+      <div class="product-card bg-[#111111] border border-[#1e1e1e] rounded-2xl overflow-hidden">
+        <div class="relative overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=600&q=80"
+            alt="Minimal Notepad"
+            class="w-full h-56 object-cover transition-transform duration-500 hover:scale-105"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+          <div class="absolute top-3 left-3">
+            <span class="tag-pill bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded-full px-2.5 py-1">New Drop</span>
+          </div>
+        </div>
+        <div class="p-5">
+          <p class="text-[11px] text-gray-500 uppercase tracking-widest mb-1.5">Stationery</p>
+          <h3 class="text-white font-semibold text-[15px] leading-snug mb-3">Leuchtturm1917 Hardcover Dot Grid Journal — A5</h3>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-white font-bold text-xl">$22.95</span>
+            <div class="score-badge rounded-lg px-3 py-1.5 text-center">
+              <p class="text-[9px] text-violet-300 uppercase tracking-widest font-semibold">Brain Score</p>
+              <p class="text-violet-300 font-black text-base leading-none">9.4<span class="text-[10px] font-medium text-violet-400">/10</span></p>
+            </div>
+          </div>
+          <a href="#" class="btn-amazon w-full block text-center py-2.5 rounded-xl text-[13px] font-semibold text-white relative z-10">
+            View on Amazon →
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Load more -->
+    <div class="text-center mt-10">
+      <button class="btn-amazon px-8 py-3 rounded-xl text-[14px] font-semibold text-gray-300 relative z-10 inline-block">
+        Load More Products
+      </button>
+    </div>
+
+  </section>
+
+  <!-- ========== FOOTER ========== -->
+  <footer class="relative z-10 border-t border-white/[0.06] py-8 px-5 sm:px-8">
+    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+
+      <!-- Logo -->
+      <div class="flex items-center gap-2">
+        <div class="w-5 h-5 rounded-md bg-gradient-to-br from-violet-500 to-purple-700 flex items-center justify-center">
+          <span class="text-white font-black text-[9px]">D</span>
+        </div>
+        <span class="text-gray-500 text-[13px] font-medium">BrainGlimpse<span class="text-violet-500">.ai</span></span>
+      </div>
+
+      <!-- Copyright -->
+      <p class="text-gray-600 text-[12px]">
+        © 2026 BrainGlimpse.ai — All rights reserved.
+      </p>
+
+      <!-- Links -->
+      <div class="flex items-center gap-5">
+        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Privacy</a>
+        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Terms</a>
+        <a href="#" class="text-[12px] text-gray-600 hover:text-gray-400 transition-colors">Contact</a>
+      </div>
+
+    </div>
+  </footer>
+
+</body>
+</html>
