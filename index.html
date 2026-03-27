@@ -254,6 +254,8 @@
     }
 
     /* ── Product grid ── */
+    .inspo-strip { display:none;gap:10px;overflow-x:auto;padding:0 0 12px;margin-bottom:24px;scrollbar-width:thin;scrollbar-color:#1E2A45 transparent; }
+    .inspo-strip img { height:120px;width:auto;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid rgba(124,58,237,0.2); }
     .products-grid { columns: 1; gap: 1.25rem; }
     @media (min-width: 640px)  { .products-grid { columns: 2; } }
     @media (min-width: 1024px) { .products-grid { columns: 3; } }
@@ -770,6 +772,9 @@
       <span id="result-count" style="font-size:12px;color:#5A7090;font-weight:500;"></span>
     </div>
 
+    <!-- Inspiration image strip -->
+    <div id="inspo-strip" class="inspo-strip"></div>
+
     <!-- Products grid -->
     <div id="products-grid" class="products-grid"></div>
 
@@ -1199,10 +1204,11 @@
       const btn = document.querySelector('.load-more-row button');
       if (btn) { btn.textContent = TRANSLATIONS[currentLang].load_more_ing; btn.disabled = true; }
       try {
-        const res  = await fetch(`/api/search?query=${encodeURIComponent(currentQuery)}&page=${currentPage}`);
+        const lmQuery = window.currentParsed?.amazon_search_queries?.[0] || currentQuery;
+        const res  = await fetch(`/api/search?query=${encodeURIComponent(lmQuery)}&page=${currentPage}`);
         const data = await res.json();
         if (res.ok && data.products?.length) {
-          renderProducts(data.products, currentQuery, true);
+          renderProducts(data.products, lmQuery, true);
         } else {
           const row = document.querySelector('.load-more-row');
           if (row) row.remove();
@@ -1244,19 +1250,46 @@
       hideError();
       document.getElementById('mock-banner').style.display = 'none';
       document.getElementById('result-meta').style.display = 'none';
+      document.getElementById('inspo-strip').style.display = 'none';
+      document.getElementById('inspo-strip').innerHTML = '';
       currentQuery = query;
       currentPage  = 1;
+      window.currentParsed = null;
       setLoading(true);
       showSkeletons();
       document.getElementById('feed-title').textContent = `${TRANSLATIONS[currentLang].results_for} "${query}"`;
       document.getElementById('products-grid').scrollIntoView({ behavior: 'smooth', block: 'start' });
 
       try {
-        const res  = await fetch(`/api/search?query=${encodeURIComponent(query)}&page=1`);
+        // Step 1: parse intent via Gemini (multilingual → English Amazon queries)
+        let searchQuery = query;
+        try {
+          const inspireRes  = await fetch(`/api/inspire?prompt=${encodeURIComponent(query)}`);
+          if (inspireRes.ok) {
+            const inspireData = await inspireRes.json();
+            window.currentParsed = inspireData;
+            if (inspireData.amazon_search_queries?.[0]) {
+              searchQuery = inspireData.amazon_search_queries[0];
+            }
+            if (inspireData.intent_summary) {
+              document.getElementById('feed-title').textContent = inspireData.intent_summary;
+            }
+            if (inspireData.inspiration_images?.length) {
+              const strip = document.getElementById('inspo-strip');
+              strip.innerHTML = inspireData.inspiration_images.slice(0, 4).map(url =>
+                `<img src="${url}" alt="" onerror="this.style.display='none'">`
+              ).join('');
+              strip.style.display = 'flex';
+            }
+          }
+        } catch { /* fall through to direct search */ }
+
+        // Step 2: search Amazon with the (now English) query
+        const res  = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}&page=1`);
         const data = await res.json();
         if (!res.ok) { showError(data.error || TRANSLATIONS[currentLang].err_generic); document.getElementById('products-grid').innerHTML = ''; return; }
         if (data.mock) document.getElementById('mock-banner').style.display = 'flex';
-        renderProducts(data.products, query);
+        renderProducts(data.products, searchQuery);
       } catch {
         showError(TRANSLATIONS[currentLang].err_network);
         document.getElementById('products-grid').innerHTML = '';

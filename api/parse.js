@@ -24,7 +24,10 @@ Return ONLY a valid JSON object — no markdown, no explanation — with exactly
 Rules:
 - amazon_search_queries must be specific enough to return real Amazon results (include materials, colors, styles)
 - style_keywords should capture the visual/emotional vibe, not product names
-- Keep intent_summary concise and in plain English`;
+- Keep intent_summary concise and in plain English
+- The user may write in any language. Always output amazon_search_queries in English.
+- style_keywords must always be in English (used for image matching).
+- intent_summary should be in the same language the user wrote in.`;
 
 export async function parsePrompt(prompt) {
   const redis = getRedis();
