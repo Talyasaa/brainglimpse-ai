@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainGlimpse.ai — Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Bricolage Grotesque"', 'sans-serif'],
+            body: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    * { -webkit-font-smoothing: antialiased; box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: #080E1A; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; color: #FAF9F7; overflow-x: hidden; }
+
+    :root {
+      --violet: #7C3AED;
+      --violet-lt: #A78BFA;
+      --blue: #3B82F6;
+      --blue-lt: #93C5FD;
+      --bg: #080E1A;
+      --card-bg: #0D1424;
+      --card-border: #1A2340;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #1E2A45; border-radius: 99px; }
+
+    .admin-input {
+      background: rgba(13, 20, 36, 0.9);
+      border: 1px solid #1A2340;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px;
+      color: #F0EEFF;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    .admin-input:focus {
+      border-color: rgba(124,58,237,0.6);
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.12);
+    }
+    .admin-input::placeholder { color: #3A4A6A; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #7C3AED 0%, #3B82F6 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 12px 28px;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 24px rgba(124,58,237,0.45);
+      transform: translateY(-1px);
+    }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .data-table th {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #5A7090;
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid #1A2340;
+      white-space: nowrap;
+    }
+    .data-table td {
+      font-size: 13px;
+      color: #C0C8E0;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(26,35,64,0.5);
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(124,58,237,0.04); }
+
+    .badge-yes {
+      background: rgba(16,185,129,0.12);
+      border: 1px solid rgba(16,185,129,0.3);
+      color: #6EE7B7;
+      font-size: 11px; font-weight: 700;
+      border-radius: 99px;
+      padding: 3px 10px;
+      letter-spacing: 0.05em;
+    }
+    .badge-no {
+      background: rgba(100,116,139,0.1);
+      border: 1px solid rgba(100,116,139,0.2);
+      color: #4A5C80;
+      font-size: 11px; font-weight: 700;
+      border-radius: 99px;
+      padding: 3px 10px;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 16px; height: 16px; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: white;
+      animation: spin 0.65s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <header style="position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(26,35,64,0.6);backdrop-filter:blur(16px);background:rgba(8,14,26,0.88);">
+    <div style="padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="/" style="display:flex;align-items:center;gap:10px;text-decoration:none;">
+        <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#7C3AED,#3B82F6,#F97316);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,58,237,0.45);">
+          <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:900;font-size:13px;color:white;">B</span>
+        </div>
+        <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:600;font-size:15px;color:#F0EEFF;">
+          BrainGlimpse<span style="background:linear-gradient(90deg,#A78BFA,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">.ai</span>
+          <span style="color:#5A7090;font-weight:400;font-size:12px;margin-left:8px;">/ Admin</span>
+        </span>
+      </a>
+      <span style="font-size:11px;color:#3A4A6A;letter-spacing:0.08em;text-transform:uppercase;">Dashboard</span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main style="max-width:900px;margin:0 auto;padding:48px 2rem 80px;">
+
+    <!-- Title -->
+    <div style="margin-bottom:40px;">
+      <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;background:linear-gradient(90deg,#A78BFA,#60A5FA);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin:0 0 8px;">Admin Panel</p>
+      <h1 style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:32px;color:#F0EEFF;margin:0;letter-spacing:-0.02em;">User Dashboard</h1>
+    </div>
+
+    <!-- Auth form -->
+    <div id="auth-section" style="background:rgba(13,20,36,0.85);backdrop-filter:blur(12px);border:1px solid #1A2340;border-radius:20px;padding:32px;max-width:460px;">
+      <p style="font-size:14px;color:#5A7090;margin:0 0 20px;line-height:1.6;">Enter your admin secret to load user data.</p>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <input id="secret-input" class="admin-input" type="password" placeholder="Admin secret…" autocomplete="current-password" />
+        <button id="load-btn" class="btn-primary" onclick="loadUsers()">
+          <span id="load-btn-text">Load Users</span>
+          <span id="load-btn-spinner" class="spinner" style="display:none;margin-left:6px;"></span>
+        </button>
+      </div>
+      <p id="auth-error" style="display:none;color:#F87171;font-size:13px;margin:12px 0 0;"></p>
+    </div>
+
+    <!-- Results section -->
+    <div id="results-section" style="display:none;margin-top:36px;">
+
+      <!-- Stats bar -->
+      <div id="stats-bar" style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;"></div>
+
+      <!-- Table card -->
+      <div style="background:rgba(13,20,36,0.85);backdrop-filter:blur(12px);border:1px solid #1A2340;border-radius:20px;overflow:hidden;">
+        <div style="padding:20px 24px;border-bottom:1px solid #1A2340;display:flex;align-items:center;justify-content:space-between;">
+          <h2 style="font-family:'Bricolage Grotesque',sans-serif;font-size:16px;font-weight:700;color:#E8E4FF;margin:0;">Registered Users</h2>
+          <button onclick="exportCSV()" style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.22);border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;color:#A78BFA;cursor:pointer;transition:all 0.2s;"
+            onmouseover="this.style.background='rgba(124,58,237,0.16)'" onmouseout="this.style.background='rgba(124,58,237,0.08)'">
+            Export CSV
+          </button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Wants Emails</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+        <div id="empty-state" style="display:none;text-align:center;padding:48px;color:#3A4A6A;font-size:14px;">No users yet.</div>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let usersData = [];
+
+    async function loadUsers() {
+      const secret = document.getElementById('secret-input').value.trim();
+      if (!secret) return;
+
+      const btn     = document.getElementById('load-btn');
+      const btnText = document.getElementById('load-btn-text');
+      const spinner = document.getElementById('load-btn-spinner');
+      const errEl   = document.getElementById('auth-error');
+
+      btn.disabled      = true;
+      btnText.textContent = '';
+      spinner.style.display = 'inline-block';
+      errEl.style.display   = 'none';
+
+      try {
+        const res  = await fetch(`/api/admin-users?secret=${encodeURIComponent(secret)}`);
+        const data = await res.json();
+
+        if (res.status === 401) {
+          errEl.textContent    = 'Invalid secret. Please try again.';
+          errEl.style.display  = 'block';
+          return;
+        }
+        if (!res.ok) {
+          errEl.textContent    = data.error || 'Failed to load users.';
+          errEl.style.display  = 'block';
+          return;
+        }
+
+        usersData = data.users || [];
+        renderUsers(usersData);
+        document.getElementById('results-section').style.display = 'block';
+        document.getElementById('results-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      } catch (e) {
+        errEl.textContent   = 'Network error. Is the server running?';
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled          = false;
+        btnText.textContent   = 'Reload';
+        spinner.style.display = 'none';
+      }
+    }
+
+    function renderUsers(users) {
+      const tbody    = document.getElementById('users-tbody');
+      const empty    = document.getElementById('empty-state');
+      const statsBar = document.getElementById('stats-bar');
+
+      // Stats
+      const total      = users.length;
+      const wantsEmail = users.filter(u => u.wants_emails).length;
+      statsBar.innerHTML = [
+        { label: 'Total Users',      value: total,      color: '#A78BFA' },
+        { label: 'Wants Emails',     value: wantsEmail, color: '#6EE7B7' },
+        { label: 'Opted Out',        value: total - wantsEmail, color: '#93C5FD' },
+      ].map(s => `
+        <div style="background:rgba(13,20,36,0.85);border:1px solid #1A2340;border-radius:14px;padding:16px 22px;min-width:130px;">
+          <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#5A7090;margin:0 0 4px;">${s.label}</p>
+          <p style="font-family:'Bricolage Grotesque',sans-serif;font-size:28px;font-weight:800;color:${s.color};margin:0;line-height:1;">${s.value}</p>
+        </div>`).join('');
+
+      if (!users.length) {
+        tbody.innerHTML    = '';
+        empty.style.display = 'block';
+        return;
+      }
+
+      empty.style.display = 'none';
+      tbody.innerHTML = users.map((u, i) => `
+        <tr>
+          <td style="color:#3A4A6A;font-size:12px;">${i + 1}</td>
+          <td style="color:#E8E4FF;font-weight:500;">${escHtml(u.email)}</td>
+          <td><span class="${u.wants_emails ? 'badge-yes' : 'badge-no'}">${u.wants_emails ? 'Yes' : 'No'}</span></td>
+          <td style="color:#5A7090;">${formatDate(u.created_at)}</td>
+        </tr>`).join('');
+    }
+
+    function formatDate(iso) {
+      if (!iso) return '—';
+      const d = new Date(iso);
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    function escHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function exportCSV() {
+      if (!usersData.length) return;
+      const rows = [['Email', 'Wants Emails', 'Joined']];
+      usersData.forEach(u => rows.push([u.email, u.wants_emails ? 'Yes' : 'No', formatDate(u.created_at)]));
+      const csv  = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url; a.download = 'brainglimpse-users.csv'; a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // Allow Enter key to trigger load
+    document.getElementById('secret-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') loadUsers();
+    });
+  </script>
+
+</body>
+</html>
