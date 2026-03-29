@@ -1564,10 +1564,10 @@
     // Found at: supabase.com → your project → Settings → API
     const SUPA_URL = 'https://hwpumkhgkxoxkiamilyd.supabase.co';
     const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh3cHVta2hna3hveGtpYW1pbHlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ2MjM1MjcsImV4cCI6MjA5MDE5OTUyN30.7Hr-wnjSAIQaWUlbqw8EZ4tj1UY_Ze5yLyrtS7YYdLE';
-    let supabase = null;
+    let sbClient = null;
     try {
       if (SUPA_URL !== 'SUPABASE_URL_PLACEHOLDER' && SUPA_KEY !== 'SUPABASE_ANON_KEY_PLACEHOLDER') {
-        supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+        sbClient = window.supabase.createClient(SUPA_URL, SUPA_KEY);
       } else {
         console.warn('[BrainGlimpse] Supabase keys not configured — auth disabled until keys are added.');
       }
@@ -1634,7 +1634,7 @@
 
     // ── Sign Up ───────────────────────────────────────────────────────────
     async function handleSignUp() {
-      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
+      if (!sbClient) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email    = document.getElementById('signup-email').value.trim();
       const password = document.getElementById('signup-password').value;
       clearAuthMessages();
@@ -1642,11 +1642,11 @@
       if (password.length < 6)  { showAuthError('Password must be at least 6 characters.'); return; }
       setAuthLoading('signup-btn', true);
       try {
-        const { data, error } = await supabase.auth.signUp({ email, password });
+        const { data, error } = await sbClient.auth.signUp({ email, password });
         if (error) { showAuthError(error.message); return; }
         if (data.user) {
           // Insert profile row (ignore duplicate error on re-signup)
-          await supabase.from('profiles').insert({ id: data.user.id, email, wants_emails: false });
+          await sbClient.from('profiles').insert({ id: data.user.id, email, wants_emails: false });
           closeAuthModal();
           showEmailPrefModal();
         } else {
@@ -1659,18 +1659,18 @@
 
     // ── Sign In ───────────────────────────────────────────────────────────
     async function handleSignIn() {
-      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
+      if (!sbClient) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email    = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
       clearAuthMessages();
       if (!email || !password) { showAuthError('Please fill in all fields.'); return; }
       setAuthLoading('signin-btn', true);
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
         if (error) { showAuthError(error.message); return; }
         closeAuthModal();
         // Show email pref modal only if profile has never been seen before
-        const { data: profile } = await supabase.from('profiles').select('wants_emails').eq('id', data.user.id).single();
+        const { data: profile } = await sbClient.from('profiles').select('wants_emails').eq('id', data.user.id).single();
         if (!profile) showEmailPrefModal();
       } finally {
         setAuthLoading('signin-btn', false);
@@ -1679,9 +1679,9 @@
 
     // ── Google OAuth ──────────────────────────────────────────────────────
     async function handleGoogleAuth() {
-      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
+      if (!sbClient) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       clearAuthMessages();
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { error } = await sbClient.auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: window.location.origin }
       });
@@ -1690,11 +1690,11 @@
 
     // ── Forgot password ───────────────────────────────────────────────────
     async function handleForgotPassword() {
-      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
+      if (!sbClient) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email = document.getElementById('signin-email').value.trim();
       clearAuthMessages();
       if (!email) { showAuthError('Enter your email above first.'); return; }
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await sbClient.auth.resetPasswordForEmail(email, {
         redirectTo: window.location.origin
       });
       if (error) { showAuthError(error.message); return; }
@@ -1703,8 +1703,8 @@
 
     // ── Sign Out ──────────────────────────────────────────────────────────
     async function handleSignOut() {
-      if (!supabase) return;
-      await supabase.auth.signOut();
+      if (!sbClient) return;
+      await sbClient.auth.signOut();
     }
 
     // ── Email preference modal ────────────────────────────────────────────
@@ -1722,10 +1722,10 @@
 
     async function saveEmailPref() {
       const wantsEmails = document.getElementById('wants-emails-checkbox').checked;
-      if (!supabase) { closeEmailPrefModal(); return; }
-      const { data: { session } } = await supabase.auth.getSession();
+      if (!sbClient) { closeEmailPrefModal(); return; }
+      const { data: { session } } = await sbClient.auth.getSession();
       if (session?.user) {
-        await supabase.from('profiles').upsert({
+        await sbClient.from('profiles').upsert({
           id: session.user.id,
           email: session.user.email,
           wants_emails: wantsEmails
@@ -1752,8 +1752,8 @@
     }
 
     // ── Listen for auth state changes ─────────────────────────────────────
-    if (supabase) {
-      supabase.auth.onAuthStateChange((event, session) => {
+    if (sbClient) {
+      sbClient.auth.onAuthStateChange((event, session) => {
         updateNavForUser(session?.user || null);
       });
     }
