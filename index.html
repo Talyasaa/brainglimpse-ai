@@ -672,7 +672,6 @@
         <a href="#" class="nav-link" data-i18n="nav_features">Features</a>
         <a href="#" class="nav-link" data-i18n="nav_pricing">Pricing</a>
         <a href="#" class="nav-link" data-i18n="nav_blog">Blog</a>
-        <button class="btn-cta" style="padding:8px 20px;font-size:13px;animation:none;box-shadow:0 0 16px rgba(124,58,237,0.3);" data-i18n="nav_cta">Get Early Access</button>
         <!-- Auth: signed-out state -->
         <button id="nav-signin-btn" onclick="openAuthModal('signin')" aria-label="Sign in">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -1563,10 +1562,18 @@
     // ── Supabase init ─────────────────────────────────────────────────────
     // ⚠️  Replace these with your Supabase project URL and anon key
     // Found at: supabase.com → your project → Settings → API
-    const supabase = window.supabase.createClient(
-      'SUPABASE_URL_PLACEHOLDER',
-      'SUPABASE_ANON_KEY_PLACEHOLDER'
-    );
+    const SUPA_URL = 'SUPABASE_URL_PLACEHOLDER';
+    const SUPA_KEY = 'SUPABASE_ANON_KEY_PLACEHOLDER';
+    let supabase = null;
+    try {
+      if (SUPA_URL !== 'SUPABASE_URL_PLACEHOLDER' && SUPA_KEY !== 'SUPABASE_ANON_KEY_PLACEHOLDER') {
+        supabase = window.supabase.createClient(SUPA_URL, SUPA_KEY);
+      } else {
+        console.warn('[BrainGlimpse] Supabase keys not configured — auth disabled until keys are added.');
+      }
+    } catch (e) {
+      console.error('[BrainGlimpse] Supabase init failed:', e.message);
+    }
 
     // ── Auth modal helpers ────────────────────────────────────────────────
     function openAuthModal(tab) {
@@ -1627,6 +1634,7 @@
 
     // ── Sign Up ───────────────────────────────────────────────────────────
     async function handleSignUp() {
+      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email    = document.getElementById('signup-email').value.trim();
       const password = document.getElementById('signup-password').value;
       clearAuthMessages();
@@ -1651,6 +1659,7 @@
 
     // ── Sign In ───────────────────────────────────────────────────────────
     async function handleSignIn() {
+      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email    = document.getElementById('signin-email').value.trim();
       const password = document.getElementById('signin-password').value;
       clearAuthMessages();
@@ -1670,6 +1679,7 @@
 
     // ── Google OAuth ──────────────────────────────────────────────────────
     async function handleGoogleAuth() {
+      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       clearAuthMessages();
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -1680,6 +1690,7 @@
 
     // ── Forgot password ───────────────────────────────────────────────────
     async function handleForgotPassword() {
+      if (!supabase) { showAuthError('Auth is not configured yet. Please contact support.'); return; }
       const email = document.getElementById('signin-email').value.trim();
       clearAuthMessages();
       if (!email) { showAuthError('Enter your email above first.'); return; }
@@ -1692,6 +1703,7 @@
 
     // ── Sign Out ──────────────────────────────────────────────────────────
     async function handleSignOut() {
+      if (!supabase) return;
       await supabase.auth.signOut();
     }
 
@@ -1710,6 +1722,7 @@
 
     async function saveEmailPref() {
       const wantsEmails = document.getElementById('wants-emails-checkbox').checked;
+      if (!supabase) { closeEmailPrefModal(); return; }
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         await supabase.from('profiles').upsert({
@@ -1739,9 +1752,11 @@
     }
 
     // ── Listen for auth state changes ─────────────────────────────────────
-    supabase.auth.onAuthStateChange((event, session) => {
-      updateNavForUser(session?.user || null);
-    });
+    if (supabase) {
+      supabase.auth.onAuthStateChange((event, session) => {
+        updateNavForUser(session?.user || null);
+      });
+    }
 
     // ── Keyboard: Escape closes modal ─────────────────────────────────────
     document.addEventListener('keydown', e => {
